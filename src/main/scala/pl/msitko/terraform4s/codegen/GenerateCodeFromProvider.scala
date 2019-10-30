@@ -2,7 +2,7 @@ package pl.msitko.terraform4s
 
 import java.io.File
 
-import pl.msitko.terraform4s.codegen.{Resource, TerraformResourcesOutput}
+import pl.msitko.terraform4s.codegen.{Codegen, Resource, TerraformResourcesOutput}
 
 /**
  * Generates scala code out of `terraform providers schema -json`
@@ -43,10 +43,10 @@ object GenerateCodeFromProvider {
     println(resourcesOutput.provider_schemas.get("aws").get.resource_schemas.size)
     val kinesisStream: Resource = resourcesOutput.provider_schemas.get("aws").get.resource_schemas.get("aws_kinesis_stream").get
 
-//    val classDefs = Codegen.fromResource("AwsKinesisStream", kinesisStream, Map.empty)
+    val classDefs = Codegen.fromResource("AwsKinesisStream", kinesisStream, Map.empty)
 //    println(s"structure: ${classDefs.structure}")
-////    println(s"show: ${classDefs.show}")
-//    println(s"syntax2 : ${classDefs.head.syntax}")
+//    println(s"show: ${classDefs.show}")
+    println(s"syntax2 : ${classDefs.head.syntax}")
 //    println(s"structure2: ${classDefs.head.structure}")
 //    println(s"show 2: ${classDefs.head.show}")
   }
