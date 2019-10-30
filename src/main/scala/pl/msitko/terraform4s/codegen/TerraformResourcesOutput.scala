@@ -1,64 +1,47 @@
-package pl.msitko.terraform4s
+package pl.msitko.terraform4s.codegen
 
-import java.io.File
-
-import cats.data.NonEmptyList
 import io.circe.Decoder.Result
-import io.circe.Json.JString
 import io.circe.{Decoder, DecodingFailure, HCursor, Json}
-import io.circe.optics.JsonPath._
-import io.circe.generic.semiauto._
+import io.circe.generic.semiauto.deriveDecoder
+import cats.implicits._
 
 import scala.collection.MapView
-import scala.util.{Success, Try}
+
 
 /**
- * Generates scala code out of `terraform providers schema -json`
+ * Models JSON output of `terraform providers schema -json`
+ * It does not include fields of original JSON that are not used for scala codegen
+ *
+ * @param provider_schemas
  */
-object GenerateCodeFromProvider {
-  def main(args: Array[String]): Unit = {
-    // inputFilePath is expected to be output of `terraform providers schema -json`
-    val inputFilePath = args.headOption match {
-      case Some(path) =>
-        path
-      case None =>
-        println("Incorrect invocation: You have to provider input file name as first parameter")
-        sys.exit(1)
-    }
-
-    val inputFile = new File(inputFilePath)
-    val json = io.circe.jawn.parseFile(inputFile) match {
-      case Right(json) =>
-        json
-      case Left(e) =>
-        println(s"$inputFilePath cannot be parsed as JSON: $e")
-        sys.exit(1)
-    }
-
-    val resourcesOutput = json.as[TerraformResourcesOutput] match {
-      case Right(v) => v
-      case Left(e) =>
-        println(s"$inputFilePath JSON cannot be parsed as TerraformResourcesOutput: $e")
-        sys.exit(1)
-    }
-
-    println(s"$inputFile parsed as TerraformResourcesOutput")
-    println(resourcesOutput.provider_schemas.get("aws").get.resource_schemas.size)
-
-  }
-}
-
-
-
-// Those types are loosely defined here, e.g. BasicAttributeType(name: String) instead of 2 types: String, Number, Bool
-// This is not to be too strict
 final case class TerraformResourcesOutput(provider_schemas: Map[String, Provider])
 
 object TerraformResourcesOutput {
   import HCLType._
 
   implicit lazy val attributeValueDecoder: Decoder[AttributeValue] = deriveDecoder[AttributeValue]
-  implicit lazy val blockDecoder: Decoder[Block] = deriveDecoder[Block]
+
+  // derived decoder for Block does not handle `List[(String, Json)]` (it was working with Map[String,
+  implicit lazy val blockDecoder: Decoder[Block] = new Decoder[Block] {
+    override def apply(c: HCursor): Result[Block] = {
+      c.downField("attributes").focus.flatMap(_.asObject) match {
+        case Some(obj) =>
+          val attrs = obj.toList.map(t => (t._1, t._2.as[AttributeValue]))
+          if(attrs.forall(_._2.isRight)) {
+            Block(attrs.map(t => (t._1, t._2.toOption.get))).asRight[DecodingFailure]
+          } else {
+            attrs.collectFirst {
+              case (key, Left(decodingFailure)) =>
+                DecodingFailure(s"Cannot decode Attribute value under $key within Block", decodingFailure.history).asLeft[Block]
+            }.get
+          }
+
+        case None => DecodingFailure("Cannot decode Block", c.history).asLeft[Block]
+      }
+    }
+  }
+
+
   implicit lazy val resourceDecoder: Decoder[Resource] = deriveDecoder[Resource]
   implicit lazy val providerDecoder: Decoder[Provider] = deriveDecoder[Provider]
   implicit lazy val decoder: Decoder[TerraformResourcesOutput] = deriveDecoder[TerraformResourcesOutput]
@@ -66,13 +49,16 @@ object TerraformResourcesOutput {
 
 final case class Provider(resource_schemas: Map[String, Resource])
 final case class Resource(version: Int, block: Block)
-final case class Block(attributes: Map[String, AttributeValue])
+// List[(String, AttributeValue)] so we can preserve the original ordering of fields (which is probably non critical but
+// the least surprising)
+final case class Block(attributes: List[(String, AttributeValue)])
+
 final case class AttributeValue(
-  `type`: HCLType,
-  optional: Option[Boolean],
-  computed: Option[Boolean],
-  required: Option[Boolean]
-)
+                                 `type`: HCLType,
+                                 optional: Option[Boolean],
+                                 computed: Option[Boolean],
+                                 required: Option[Boolean]
+                               )
 
 
 // https://www.terraform.io/docs/configuration/types.html
@@ -93,7 +79,9 @@ final case class HCLList(`type`: HCLType) extends CollectionType
 final case class HCLMap(`type`: HCLType) extends CollectionType
 final case class HCLSet(`type`: HCLType) extends CollectionType
 
-final case class HCLObject(attributes: Map[String, HCLType]) extends StructuralType
+// List[(String, HCLType)] so we can preserve the original ordering of fields (which is probably non critical but
+// the least surprising)
+final case class HCLObject(attributes: List[(String, HCLType)]) extends StructuralType
 // there's not `tuple` type in output of `terraform provider` for AWS so leaving it out for future:
 //final case class HCLTuple(`type`: HCLType) extends CollectionTypes
 
@@ -103,6 +91,8 @@ object HCLType {
 
   implicit lazy val decoder: Decoder[HCLType] = new Decoder[HCLType] {
     override def apply(c: HCursor): Result[HCLType] = {
+      println("bazinga 0000")
+
       val primitiveTypePf: String => Either[DecodingFailure, PrimitiveType] = {
         case "string" => HCLString.asRight[DecodingFailure]
         case "number" => HCLNumber.asRight[DecodingFailure]
@@ -117,10 +107,10 @@ object HCLType {
         case "set" => hcursor => this.apply(hcursor).map(HCLSet.apply)
         case "object" => hcursor => hcursor.value.asObject match {
           case Some(obj) =>
-            val v = obj.toMap.view.mapValues(tmp)
+            val v = obj.toList.map(t => (t._1, tmp(t._2)))
             if (v.forall(_._2.isRight)) {
-              val r = v.mapValues(_.right.get)
-              HCLObject(r.toMap).asRight[DecodingFailure]
+              val r = v.map(t => (t._1, t._2.toOption.get))
+              HCLObject(r).asRight[DecodingFailure]
             } else {
               DecodingFailure("todo7", hcursor.history).asLeft[HCLType]
             }
@@ -130,6 +120,7 @@ object HCLType {
 
       c.value.asString.fold {
         try {
+          println("bazinga 00")
           val first = c.downN(0).focus.get.asString.get
           val second = c.downN(1).success.get
           nonPrimitive(first)(second)
@@ -151,7 +142,8 @@ object HCLType {
   val objectS = Json.fromString("object")
 
   // TODO: non tailrec recursion
-  def tmp(json: Json): Either[String, HCLType] =
+  def tmp(json: Json): Either[String, HCLType] = {
+    println("bazinga 90")
     json.asString match {
       case Some("string") => HCLString.asRight[String]
       case Some("number") => HCLNumber.asRight[String]
@@ -164,20 +156,25 @@ object HCLType {
           case Some(`mapS` :: tpe :: Nil) => tmp(tpe).map(HCLMap.apply)
           case Some(`setS` :: tpe :: Nil) => tmp(tpe).map(HCLSet.apply)
           case Some(`objectS` :: tpe :: Nil) =>
+            println("bazinga 100")
             tpe.asObject match {
               case Some(obj) =>
-                val v1: MapView[String, Either[String, HCLType]] = obj.toMap.view.mapValues(tmp)
+                println("bazinga 101")
+                val v1 = obj.toList.map(t => (t._1, tmp(t._2)))
                 if (v1.forall(_._2.isRight)) {
-                  val r = v1.mapValues(_.right.get)
-                  HCLObject(r.toMap).asRight[String]
+                  val r = v1.map(t => (t._1, t._2.toOption.get))
+                  HCLObject(r).asRight[String]
                 } else {
                   "todo6".asLeft[HCLType]
                 }
               case None => "todo5".asLeft[HCLType]
             }
+          case w =>
+            s"todo 634: $w".asLeft[HCLType]
         }
     }
+  }
 
-//  implicit lazy val decoder: Decoder[AttributeType] =
-//    Decoder.decodeNonEmptyList[String].or(Decoder.decodeString.map(s => NonEmptyList.of(s))).map(AttributeType.apply)
+  //  implicit lazy val decoder: Decoder[AttributeType] =
+  //    Decoder.decodeNonEmptyList[String].or(Decoder.decodeString.map(s => NonEmptyList.of(s))).map(AttributeType.apply)
 }

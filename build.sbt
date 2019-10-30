@@ -11,5 +11,6 @@ libraryDependencies ++= Seq(
   "com.beachape" %% "enumeratum" % "1.5.13",
   "io.circe" %% "circe-parser" % "0.12.3",
   "io.circe" %% "circe-generic" % "0.12.3",
-  "io.circe" %% "circe-optics" % "0.12.0"
+  "io.circe" %% "circe-optics" % "0.12.0",
+  "org.scalameta" %% "scalameta" % "4.2.3"
 )
