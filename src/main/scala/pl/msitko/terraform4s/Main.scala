@@ -4,9 +4,9 @@ import scala.meta._
 
 // TODO: to remove
 object Main {
+
   def main(arr: Array[String]): Unit = {
     println("here")
-
 
     val program =
       """package hello.there

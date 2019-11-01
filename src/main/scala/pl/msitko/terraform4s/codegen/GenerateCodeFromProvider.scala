@@ -7,9 +7,10 @@ import pl.msitko.terraform4s.provider.ast._
 import pl.msitko.terraform4s.provider.json._
 
 /**
- * Generates scala code out of `terraform providers schema -json`
- */
+  * Generates scala code out of `terraform providers schema -json`
+  */
 object GenerateCodeFromProvider {
+
   def main(args: Array[String]): Unit = {
     // inputFilePath is expected to be output of `terraform providers schema -json`
     val inputFilePath = args.headOption match {
@@ -29,7 +30,6 @@ object GenerateCodeFromProvider {
         sys.exit(1)
     }
 
-
     val resourcesOutput = json.as[ProviderSchema] match {
       case Right(v) => v
       case Left(e) =>
@@ -40,10 +40,10 @@ object GenerateCodeFromProvider {
         sys.exit(1)
     }
 
-
     println(s"$inputFile parsed as TerraformResourcesOutput")
     println(resourcesOutput.provider_schemas.get("aws").get.resource_schemas.size)
-    val kinesisStream: Resource = resourcesOutput.provider_schemas.get("aws").get.resource_schemas.get("aws_kinesis_stream").get
+    val kinesisStream: Resource =
+      resourcesOutput.provider_schemas.get("aws").get.resource_schemas.get("aws_kinesis_stream").get
 
     val classDefs = Codegen.fromResource("AwsKinesisStream", kinesisStream, Map.empty)
 //    println(s"structure: ${classDefs.structure}")

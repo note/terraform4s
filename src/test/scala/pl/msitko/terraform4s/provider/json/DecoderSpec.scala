@@ -14,8 +14,8 @@ class DecoderSpec extends WordSpec with Matchers with DiffMatcher {
   "ProviderSchema decoder" should {
     "work for sample file" in {
       val classloader = Thread.currentThread.getContextClassLoader
-      val is = classloader.getResourceAsStream("part-of-aws-provider.json")
-      val buffer = ByteBuffer.wrap(IOUtils.toByteArray(is))
+      val is          = classloader.getResourceAsStream("part-of-aws-provider.json")
+      val buffer      = ByteBuffer.wrap(IOUtils.toByteArray(is))
 
       val json = parseByteBuffer(buffer).toOption.get
 
@@ -24,13 +24,15 @@ class DecoderSpec extends WordSpec with Matchers with DiffMatcher {
       val rschemas = res.provider_schemas.apply("aws").resource_schemas
       rschemas.size should equal(4)
 
-      val expected = Resource(0,Block(
-        List(
-          ("certificate_arn", AttributeValue(HCLString, None, None, Some(true))),
-          ("id", AttributeValue(HCLString, Some(true), Some(true), None)),
-          ("validation_record_fqdns", AttributeValue(HCLSet(HCLString), Some(true), None, None))
-        )
-      ))
+      val expected = Resource(
+        0,
+        Block(
+          List(
+            ("certificate_arn", AttributeValue(HCLString, None, None, Some(true))),
+            ("id", AttributeValue(HCLString, Some(true), Some(true), None)),
+            ("validation_record_fqdns", AttributeValue(HCLSet(HCLString), Some(true), None, None))
+          )
+        ))
 
       rschemas.apply("aws_acm_certificate_validation") should equal(expected)
     }
@@ -58,13 +60,18 @@ class DecoderSpec extends WordSpec with Matchers with DiffMatcher {
                   |  ]
                   |]""".stripMargin
 
-      val expected = HCLList(HCLObject(List(
-        "domain_name" -> HCLString,
-        "resource_record_name" -> HCLString,
-        "resource_record_type" -> HCLString,
-        "resource_record_value" -> HCLString,
-      )))
+      val expected = HCLList(
+        HCLObject(
+          List(
+            "domain_name"           -> HCLString,
+            "resource_record_name"  -> HCLString,
+            "resource_record_type"  -> HCLString,
+            "resource_record_value" -> HCLString,
+          )))
       parse(str).toOption.get.as[HCLType].toOption.get should equal(expected)
     }
   }
+
+  // TODO: add cases for failure
+  // TODO: add proper handling of `AttributeValue` attributes so we have ADT of required/input etc
 }
