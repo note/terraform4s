@@ -1,5 +1,7 @@
 package pl.msitko.terraform4s.codegen
 
+import pl.msitko.terraform4s.provider.ast._
+
 import scala.meta._
 
 object Codegen {

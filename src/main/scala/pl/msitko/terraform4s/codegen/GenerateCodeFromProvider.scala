@@ -2,7 +2,9 @@ package pl.msitko.terraform4s
 
 import java.io.File
 
-import pl.msitko.terraform4s.codegen.{Codegen, Resource, TerraformResourcesOutput}
+import pl.msitko.terraform4s.codegen.Codegen
+import pl.msitko.terraform4s.provider.ast._
+import pl.msitko.terraform4s.provider.json._
 
 /**
  * Generates scala code out of `terraform providers schema -json`
@@ -28,7 +30,7 @@ object GenerateCodeFromProvider {
     }
 
 
-    val resourcesOutput = json.as[TerraformResourcesOutput] match {
+    val resourcesOutput = json.as[ProviderSchema] match {
       case Right(v) => v
       case Left(e) =>
         println(s"$inputFilePath JSON cannot be parsed as TerraformResourcesOutput: $e")
