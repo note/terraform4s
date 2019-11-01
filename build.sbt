@@ -11,6 +11,7 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-generic" % "0.12.3",
   "io.circe" %% "circe-optics" % "0.12.0",
   "org.scalameta" %% "scalameta" % "4.2.3",
+  "com.softwaremill.diffx" %% "diffx-scalatest" % "0.3.8" % Test,
   "org.scalatest" %% "scalatest" % "3.0.8" % Test,
   "commons-io" % "commons-io" % "2.6" % Test
 )

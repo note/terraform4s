@@ -2,12 +2,13 @@ package pl.msitko.terraform4s.provider.json
 
 import java.nio.ByteBuffer
 
-import org.scalatest.WordSpec
+import com.softwaremill.diffx.scalatest.DiffMatcher
+import org.scalatest.{Matchers, WordSpec}
 import io.circe.jawn.parseByteBuffer
 import org.apache.commons.io.IOUtils
-import pl.msitko.terraform4s.provider.ast.ProviderSchema
+import pl.msitko.terraform4s.provider.ast._
 
-class DecoderSpec extends WordSpec {
+class DecoderSpec extends WordSpec with Matchers with DiffMatcher {
   "ProviderSchema decoder" should {
     "work for sample file" in {
       val classloader = Thread.currentThread.getContextClassLoader
@@ -18,7 +19,18 @@ class DecoderSpec extends WordSpec {
 
       val res = json.as[ProviderSchema].toOption.get
 
-      println(res)
+      val rschemas = res.provider_schemas.apply("aws").resource_schemas
+      rschemas.size should equal(4)
+
+      val expected = Resource(0,Block(
+        List(
+          ("certificate_arn", AttributeValue(HCLString, None, None, Some(true))),
+          ("id", AttributeValue(HCLString, Some(true), Some(true), None)),
+          ("validation_record_fqdns", AttributeValue(HCLSet(HCLString), Some(true), None, None))
+        )
+      ))
+
+      rschemas.apply("aws_acm_certificate_validation") should equal(expected)
     }
   }
 }
