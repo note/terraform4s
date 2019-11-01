@@ -9,8 +9,6 @@ import pl.msitko.terraform4s.provider.ast._
 package object json {
   implicit lazy val hclTypeDecoder: Decoder[HCLType] = new Decoder[HCLType] {
     override def apply(c: HCursor): Result[HCLType] = {
-      println("bazinga 0000")
-
       val primitiveTypePf: String => Either[DecodingFailure, PrimitiveType] = {
         case "string" => HCLString.asRight[DecodingFailure]
         case "number" => HCLNumber.asRight[DecodingFailure]
@@ -38,7 +36,6 @@ package object json {
 
       c.value.asString.fold {
         try {
-          println("bazinga 00")
           val first = c.downN(0).focus.get.asString.get
           val second = c.downN(1).success.get
           nonPrimitive(first)(second)
@@ -60,7 +57,6 @@ package object json {
 
   // TODO: non tailrec recursion
   def tmp(json: Json): Either[String, HCLType] = {
-    println("bazinga 90")
     json.asString match {
       case Some("string") => HCLString.asRight[String]
       case Some("number") => HCLNumber.asRight[String]
@@ -73,10 +69,8 @@ package object json {
           case Some(`mapS` :: tpe :: Nil) => tmp(tpe).map(HCLMap.apply)
           case Some(`setS` :: tpe :: Nil) => tmp(tpe).map(HCLSet.apply)
           case Some(`objectS` :: tpe :: Nil) =>
-            println("bazinga 100")
             tpe.asObject match {
               case Some(obj) =>
-                println("bazinga 101")
                 val v1 = obj.toList.map(t => (t._1, tmp(t._2)))
                 if (v1.forall(_._2.isRight)) {
                   val r = v1.map(t => (t._1, t._2.toOption.get))
