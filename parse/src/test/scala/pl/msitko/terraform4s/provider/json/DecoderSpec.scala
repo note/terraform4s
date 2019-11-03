@@ -2,7 +2,6 @@ package pl.msitko.terraform4s.provider.json
 
 import java.nio.ByteBuffer
 
-import com.softwaremill.diffx.scalatest.DiffMatcher
 import io.circe.Json
 import org.scalatest.{Matchers, WordSpec}
 import io.circe.jawn.parseByteBuffer
@@ -10,12 +9,14 @@ import io.circe.parser.parse
 import org.apache.commons.io.IOUtils
 import pl.msitko.terraform4s.provider.ast._
 
-class DecoderSpec extends WordSpec with Matchers with DiffMatcher {
+class DecoderSpec extends WordSpec with Matchers {
   "ProviderSchema decoder" should {
     "work for sample file" in {
       val classloader = Thread.currentThread.getContextClassLoader
-      val is          = classloader.getResourceAsStream("part-of-aws-provider.json")
-      val buffer      = ByteBuffer.wrap(IOUtils.toByteArray(is))
+      // part-of-aws-provider.json is part of output of `terraform providers schema -json` for
+      // Terraform v0.12.12, provider.aws v2.33.0
+      val is     = classloader.getResourceAsStream("part-of-aws-provider.json")
+      val buffer = ByteBuffer.wrap(IOUtils.toByteArray(is))
 
       val json = parseByteBuffer(buffer).toOption.get
 

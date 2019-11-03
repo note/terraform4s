@@ -2,8 +2,8 @@ package pl.msitko.terraform4s.provider
 
 import cats.implicits._
 import io.circe.Decoder.Result
-import io.circe.{Decoder, DecodingFailure, HCursor, Json}
 import io.circe.generic.semiauto.deriveDecoder
+import io.circe.{Decoder, DecodingFailure, HCursor, Json}
 import pl.msitko.terraform4s.provider.ast._
 
 package object json {
@@ -114,7 +114,7 @@ package object json {
     }
   }
 
-  implicit lazy val resourceDecoder: Decoder[Resource] = deriveDecoder[Resource]
-  implicit lazy val providerDecoder: Decoder[Provider] = deriveDecoder[Provider]
-  implicit lazy val decoder: Decoder[ProviderSchema]   = deriveDecoder[ProviderSchema]
+  implicit lazy val resourceDecoder: Decoder[Resource]             = deriveDecoder[Resource]
+  implicit lazy val providerDecoder: Decoder[Provider]             = deriveDecoder[Provider]
+  implicit lazy val providerSchemaDecoder: Decoder[ProviderSchema] = deriveDecoder[ProviderSchema]
 }
