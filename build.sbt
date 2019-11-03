@@ -23,3 +23,5 @@ lazy val codegen = (project in file("codegen"))
   )
   .dependsOn(parse)
 
+lazy val templating = (project in file("templating"))
+  .commonSettings("terraform4s-templating", "0.1.0")
