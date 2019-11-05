@@ -25,3 +25,8 @@ lazy val codegen = (project in file("codegen"))
 
 lazy val templating = (project in file("templating"))
   .commonSettings("terraform4s-templating", "0.1.0")
+  .settings(
+    libraryDependencies ++= Seq(
+      "io.circe" %% "circe-generic" % "0.12.3"
+    )
+  )
