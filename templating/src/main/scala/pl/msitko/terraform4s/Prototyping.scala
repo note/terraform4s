@@ -9,10 +9,10 @@ final case class TypedBool(v: Val[Boolean]) extends TypedValue
 
 final case class Field(originalName: String, value: TypedValue)
 
-abstract class Resource[T] {
-//  type OutT
+abstract class Resource[T <: PartialResourceOut] {
   def out: T
   def fields: List[Field]
+  def resolveOut(schemaName: String, resourceName: String): T#Resolved = out.complete(schemaName, resourceName)
 
   def schemaName: String // e.g. aws_kinesis_stream, useful only for generating .tf.json
 }
@@ -26,20 +26,46 @@ sealed trait Val[T] {
 //  def map(fn: T => T): Val[T]
 }
 
-final case class InVal[T](v: T)             extends Val[T]
-abstract class OutVal[T](fieldName: String) extends Val[T]
+final case class InVal[T](v: T) extends Val[T]
 
-final case class OutStringVal(fieldName: String) extends OutVal[String](fieldName) {
+// is type T useful here?
+trait OutValBase[T] extends Val[T] {
+  def resolve: String
+}
+
+// in `${aws_route53_zone.primary.zone_id}`:
+// schemaName = aws_route53_zone
+// resourceName = primary
+// fieldName = zone_id
+abstract class CommonOutVal[T] extends OutValBase[T] {
+  def schemaName: String
+  def resourceName: String
+  def fieldName: String
+
+  def resolve: String = s"$${$schemaName.$resourceName.$fieldName}"
+}
+
+final case class OutVal[T](schemaName: String, resourceName: String, fieldName: String) extends CommonOutVal[T]
+
+final case class OutStringVal(schemaName: String, resourceName: String, fieldName: String)
+    extends CommonOutVal[String] {
   // This is added to demonstrate how we can implement `supported subset of map`
   // As you see it requires quite a lot of code as we need to express result of each operation as separate
   // data type, in this case OutAppendedStringVal
-  def append(s: String): Val[String] = OutAppendedStringVal(fieldName, s)
+  def append(s: String): Val[String] = OutAppendedStringVal(schemaName, resourceName, fieldName, s)
 }
 
-final case class OutAppendedStringVal(fieldName: String, appendedPart: String) extends Val[String]
+final case class OutAppendedStringVal(schemaName: String, resourceName: String, fieldName: String, appendedPart: String)
+    extends OutValBase[String] {
+  override def resolve: String = s"$${$schemaName.$resourceName.$fieldName}$appendedPart"
+}
 
-object OutVal {
-  def create[T](fieldName: String) = new OutVal[T](fieldName) {}
+abstract class PartialOutVal[T](val fieldName: String)
+
+final case class PartialOutStringVal(override val fieldName: String) extends PartialOutVal[String](fieldName) {}
+
+object PartialOutVal {
+  def create[T](fieldName: String) = new PartialOutVal[T](fieldName) {}
 }
 
 object Val {
@@ -48,6 +74,6 @@ object Val {
 }
 
 // TODO: is name really needed? Probably can be generated and end user does not care about exact name
-final case class NamedResource[T](name: String, resource: Resource[T]) {
-  def out = resource.out
+final case class NamedResource[Out <: PartialResourceOut](name: String, resource: Resource[Out]) {
+  def out: Out#Resolved = resource.resolveOut(resource.schemaName, name)
 }

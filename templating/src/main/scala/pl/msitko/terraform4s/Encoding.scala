@@ -30,8 +30,13 @@ object Encoding {
   }
 
   def encodeTypeValue(v: TypedValue): Json = v match {
-    case TypedString(InVal(v)) => Json.fromString(v)
-    case _                     => ???
+    case TypedString(InVal(v))         => Json.fromString(v)
+    case TypedBool(InVal(v))           => Json.fromBoolean(v)
+    case TypedString(v: OutValBase[_]) => Json.fromString(v.resolve)
+    case TypedBool(v: OutValBase[_])   => Json.fromString(v.resolve)
+    case e =>
+      println(e)
+      ???
   }
 
 }
