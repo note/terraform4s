@@ -1,5 +1,7 @@
 package pl.msitko.terraform4s
 
+import java.util.UUID
+
 sealed trait TypedValue
 
 final case class TypedString(v: Val[String]) extends TypedValue
@@ -9,11 +11,30 @@ final case class TypedBool(v: Val[Boolean]) extends TypedValue
 
 final case class Field(originalName: String, value: TypedValue)
 
-abstract class Resource[T <: PartialResourceOut] {
+class ProvidersRoot {
+  private var resources = Vector.empty[Resource[_]]
+
+  private def generateUniqueResourceName(schemaName: String): String =
+    UUID.randomUUID().toString // TODO: change it to sth sensible
+
+  def add(r: Resource[_]): String = {
+    val resourceName = generateUniqueResourceName(r.schemaName)
+    resources = resources.prepended(r)
+    resourceName
+  }
+
+  def getJson = Encoding.encode(resources)
+}
+
+object ProvidersRoot {
+  implicit lazy val Default: ProvidersRoot = new ProvidersRoot
+}
+
+abstract class Resource[T](root: ProvidersRoot) {
+  val resourceName: String = root.add(this)
+
   def out: T
   def fields: List[Field]
-  def resolveOut(schemaName: String, resourceName: String): T#Resolved = out.complete(schemaName, resourceName)
-
   def schemaName: String // e.g. aws_kinesis_stream, useful only for generating .tf.json
 }
 
@@ -74,6 +95,6 @@ object Val {
 }
 
 // TODO: is name really needed? Probably can be generated and end user does not care about exact name
-final case class NamedResource[Out <: PartialResourceOut](name: String, resource: Resource[Out]) {
-  def out: Out#Resolved = resource.resolveOut(resource.schemaName, name)
-}
+//final case class NamedResource[Out <: PartialResourceOut](name: String, resource: Resource[Out]) {
+//  def out: Out#Resolved = resource.resolveOut(resource.schemaName, name)
+//}
