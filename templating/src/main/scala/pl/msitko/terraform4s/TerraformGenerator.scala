@@ -4,7 +4,7 @@ import io.circe.{Encoder, Json, JsonObject}
 import io.circe.generic.semiauto.deriveEncoder
 import io.circe.syntax._
 
-object Encoding {
+object TerraformGenerator {
 
   def encode(resources: Seq[Resource[_]]): Json =
     Json.fromJsonObject(

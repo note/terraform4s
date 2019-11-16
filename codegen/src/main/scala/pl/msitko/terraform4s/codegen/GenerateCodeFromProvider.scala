@@ -48,7 +48,8 @@ object GenerateCodeFromProvider {
     val classDefs = Codegen.fromResource("AwsKinesisStream", kinesisStream, Map.empty)
 //    println(s"structure: ${classDefs.structure}")
 //    println(s"show: ${classDefs.show}")
-    println(s"syntax2 : ${classDefs.head.syntax}")
+    println("syntax2 : ")
+    classDefs.map(_.syntax).foreach(println)
 //    println(s"structure2: ${classDefs.head.structure}")
 //    println(s"show 2: ${classDefs.head.show}")
   }

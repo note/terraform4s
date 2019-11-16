@@ -10,9 +10,21 @@ final case class ProviderSchema(provider_schemas: Map[String, Provider])
 
 final case class Provider(resource_schemas: Map[String, Resource])
 final case class Resource(version: Int, block: Block)
+
 // List[(String, AttributeValue)] so we can preserve the original ordering of fields (which is probably non critical but
 // the least surprising)
-final case class Block(attributes: List[(String, AttributeValue)])
+final case class Block(attributes: List[(String, AttributeValue)]) {
+
+  // TODO: test all 3 methods
+  def optionalInputs: List[(String, AttributeValue)] =
+    attributes.filter(t => t._2.optional.getOrElse(false) && !t._2.computed.getOrElse(false))
+
+  def requiredInputs: List[(String, AttributeValue)] =
+    attributes.filter(_._2.required.getOrElse(false))
+
+  def outputs: List[(String, AttributeValue)] =
+    attributes.filter(t => t._2.optional.getOrElse(false) && t._2.computed.getOrElse(false))
+}
 
 final case class AttributeValue(
     `type`: HCLType,

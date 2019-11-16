@@ -23,23 +23,30 @@ object Codegen {
       fromHCLObject(syntheticClassName, obj, hclObjectsCache)
     }
 
-    anonymousClassesDefs ++ List(generateResourceClass(name, arguments, hclObjectsCache))
+    anonymousClassesDefs ++ generateResourceClass(name, resource, hclObjectsCache)
   }
 
-  private def generateResourceClass(
-      name: String,
-      v: List[(String, AttributeValue)],
-      hclObjectsCache: CacheType): Defn.Class = {
-    val params = v.map {
-      case (attrName, attr) =>
-        Term.Param(
-          mods = Nil,
-          name = Term.Name(attrName),
-          decltpe = Some(typeStringFromType(attr.`type`, hclObjectsCache)),
-          default = None)
-    }
+  private def generateResourceClass(name: String, v: Resource, hclObjectsCache: CacheType): List[Defn.Class] = {
+    val outTypeName = name + "Out"
 
-    caseClass(name, params)
+    // format: off
+    List(
+      OutCodegen.out(outTypeName, v.block.outputs),
+      Defn.Class(List(Mod.Final(), Mod.Case()), Type.Name(name), Nil, Ctor.Primary(Nil, Name(""), List(
+        InputParamsCodegen.requiredParams(v.block.requiredInputs) ++ InputParamsCodegen.optionalParams(v.block.optionalInputs),
+        List(Term.Param(List(Mod.Implicit()), Term.Name("r"), Some(Type.Name("ProvidersRoot")), None))
+      )),
+        Template(Nil, List(Init(Type.Apply(Type.Name("Resource"), List(Type.Name(outTypeName))), Name(""), List(List(Term.Name("r"))))), Self(Name(""), None),
+          List(
+            OutMethodCodegen.generate(name + "Out", v.block.outputs),
+            FieldsMethod.generate(v.block.requiredInputs),
+            FieldsMethod.generateOptionalFields(v.block.optionalInputs),
+            Defn.Def(List(Mod.Override()), Term.Name("schemaName"), Nil, Nil, Some(Type.Name("String")), Lit.String(name))
+          )
+        )
+      )
+    )
+    // format: on
   }
 
   // TODO: non recursive recursion

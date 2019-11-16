@@ -28,6 +28,7 @@ lazy val templating = (project in file("templating"))
   .settings(
     libraryDependencies ++= Seq(
       "io.circe" %% "circe-generic" % "0.12.3",
-      "com.lihaoyi" %% "sourcecode" % "0.1.8"
+      "com.lihaoyi" %% "sourcecode" % "0.1.8",
+      "org.scalameta" %% "scalameta" % "4.2.3" // remove it, useful only for prototyping
     )
   )
