@@ -18,10 +18,14 @@ lazy val codegen = (project in file("codegen"))
     libraryDependencies ++= Seq(
       "software.amazon.awssdk" % "sdk-core" % "2.9.26", // TODO: is it needed?
       "com.beachape" %% "enumeratum" % "1.5.13",
-      "org.scalameta" %% "scalameta" % "4.2.3"
+      "org.scalameta" %% "scalameta" % "4.2.3",
+      "org.scalameta" %% "scalafmt-dynamic" % "2.2.2"
     )
-  )
+)
   .dependsOn(parse)
+  // TODO: good enough for now. Needed because scalafmt needs to be able to compile sources which uses types
+  // defined in templating (e.g. Resource). On the long run templating should be split into 2 modules
+  .dependsOn(templating)
 
 lazy val templating = (project in file("templating"))
   .commonSettings("terraform4s-templating", "0.1.0")

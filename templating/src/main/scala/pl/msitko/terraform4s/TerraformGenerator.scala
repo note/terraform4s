@@ -23,20 +23,10 @@ object TerraformGenerator {
               namedResource.resourceName,
               Json.fromJsonObject(JsonObject.fromMap(namedResource.fields.foldLeft(Map.empty[String, Json]) {
                 (acc, curr) =>
-                  acc.+(curr.originalName -> encodeTypeValue(curr.value))
+                  acc.+(curr.originalName -> curr.value.toTerraform)
               }))
             ))
         ))
-  }
-
-  def encodeTypeValue(v: TypedValue): Json = v match {
-    case TypedString(InVal(v))         => Json.fromString(v)
-    case TypedBool(InVal(v))           => Json.fromBoolean(v)
-    case TypedString(v: OutValBase[_]) => Json.fromString(v.resolve)
-    case TypedBool(v: OutValBase[_])   => Json.fromString(v.resolve)
-    case e =>
-      println(e)
-      ???
   }
 
 }

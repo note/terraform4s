@@ -9,10 +9,8 @@ object FieldsMethod {
   def generate(requiredFields: List[(String, AttributeValue)]): Defn.Def = {
     println(s"bazinga ${requiredFields}")
     val fields = requiredFields.map {
-      case (fieldName, attr) =>
-        Term.Apply(
-          Term.Name("Field"),
-          List(Lit.String(fieldName), Term.Apply(fromTpe(attr.`type`), List(Term.Name(fieldName)))))
+      case (fieldName, _) =>
+        Term.Apply(Term.Name("Field"), List(Lit.String(fieldName), Term.Name(fieldName)))
     }
 
     Defn.Def(
@@ -32,9 +30,7 @@ object FieldsMethod {
           List(
             Term.Function(
               List(Term.Param(Nil, Term.Name("i"), None, None)),
-              Term.Apply(
-                Term.Name("Field"),
-                List(Lit.String(fieldName), Term.Apply(fromTpe(attr.`type`), List(Term.Name("i"))))))))
+              Term.Apply(Term.Name("Field"), List(Lit.String(fieldName), Term.Name("i"))))))
     }
 
     Defn.Def(
@@ -47,11 +43,11 @@ object FieldsMethod {
   }
 
   // TODO: non-recursive recursion
-  private def fromTpe(tpe: HCLType): Term = tpe match {
-    case HCLString => Term.Name("TypedString")
-    case HCLNumber => Term.Name("TypedNumber")
-    case HCLBool   => Term.Name("TypeBool")
-    case HCLSet    => Term.Apply(Type.Name("Set"), List)
-    case _         => ???
-  }
+//  private def fromTpe(tpe: HCLType): Term = tpe match {
+//    case HCLString => Term.Name("TypedString")
+//    case HCLNumber => Term.Name("TypedNumber")
+//    case HCLBool   => Term.Name("TypeBool")
+//    case HCLSet    => Term.Apply(Type.Name("Set"), List)
+//    case _         => ???
+//  }
 }

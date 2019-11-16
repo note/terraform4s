@@ -1,5 +1,7 @@
 package pl.msitko.terraform4s
 
+import io.circe.Json
+
 sealed trait Val[T] {
   // that's the fundamental problem here
   // as we don't have output value available during templating phase it will never be available on scala side
@@ -7,14 +9,15 @@ sealed trait Val[T] {
   // At best we can try to express all HCL abilities as a scala AST and then try to generate HCL expressions out of this
   // While doable it would require a lot of effort
   //  def map(fn: T => T): Val[T]
+
+  def toTerraform: Json
 }
 
-final case class InVal[T](v: T) extends Val[T]
+// abstract class or trait?
+abstract class InVal[T](v: T) extends Val[T]
 
 // is type T useful here?
-trait OutValBase[T] extends Val[T] {
-  def resolve: String
-}
+trait OutValBase[T] extends Val[T]
 
 // in `${aws_route53_zone.primary.zone_id}`:
 // schemaName = aws_route53_zone
@@ -25,7 +28,7 @@ abstract class CommonOutVal[T] extends OutValBase[T] {
   def resourceName: String
   def fieldName: String
 
-  def resolve: String = s"$${$schemaName.$resourceName.$fieldName}"
+  def toTerraform: Json = Json.fromString(s"$${$schemaName.$resourceName.$fieldName}")
 }
 
 final case class OutVal[T](schemaName: String, resourceName: String, fieldName: String) extends CommonOutVal[T]
@@ -40,10 +43,18 @@ final case class OutStringVal(schemaName: String, resourceName: String, fieldNam
 
 final case class OutAppendedStringVal(schemaName: String, resourceName: String, fieldName: String, appendedPart: String)
     extends OutValBase[String] {
-  override def resolve: String = s"$${$schemaName.$resourceName.$fieldName}$appendedPart"
+  override def toTerraform: Json = Json.fromString(s"$${$schemaName.$resourceName.$fieldName}$appendedPart")
 }
 
 object Val {
-  implicit def fromString(s: String): InVal[String]    = new InVal[String](s)
-  implicit def fromBoolean(b: Boolean): InVal[Boolean] = new InVal[Boolean](b)
+
+  implicit def fromString(str: String): InVal[String] = new InVal[String](str) {
+    // https://www.terraform.io/docs/configuration/expressions.html#string
+    override def toTerraform: Json = Json.fromString(str)
+  }
+
+  implicit def fromBoolean(b: Boolean): InVal[Boolean] = new InVal[Boolean](b) {
+    // https://www.terraform.io/docs/configuration/expressions.html#bool
+    override def toTerraform: Json = Json.fromBoolean(b)
+  }
 }
