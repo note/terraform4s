@@ -19,7 +19,9 @@ lazy val codegen = (project in file("codegen"))
       "software.amazon.awssdk" % "sdk-core" % "2.9.26", // TODO: is it needed?
       "com.beachape" %% "enumeratum" % "1.5.13",
       "org.scalameta" %% "scalameta" % "4.2.3",
-      "org.scalameta" %% "scalafmt-dynamic" % "2.2.2"
+      "org.scalameta" %% "scalafmt-dynamic" % "2.2.2",
+      "org.scalatest" %% "scalatest" % "3.0.8" % Test,
+      "commons-io" % "commons-io" % "2.6" % Test
     )
 )
   .dependsOn(parse)
