@@ -21,7 +21,7 @@ class ItSpec extends WordSpec with Matchers {
       assert(resourceSchemas.size === 527)
       val simpleEnoughResource = resourceSchemas.get("aws_kinesis_stream").get
 
-      val classDefs = Codegen.fromResource("AwsKinesisStream", simpleEnoughResource, Map.empty)
+      val classDefs = Codegen.fromResource("AwsKinesisStream", simpleEnoughResource, new DefaultCodegenContext)
       classDefs.map(_.syntax).foreach(println)
 
       import org.scalafmt.interfaces.Scalafmt

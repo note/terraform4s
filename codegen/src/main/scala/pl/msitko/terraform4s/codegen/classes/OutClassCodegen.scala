@@ -1,10 +1,14 @@
-package pl.msitko.terraform4s.codegen
+package pl.msitko.terraform4s.codegen.classes
 
 import pl.msitko.terraform4s.provider.ast._
 
 import scala.meta.{Ctor, Defn, Mod, Name, Self, Template, Term, Type}
 
-object OutCodegen {
+/**
+  * It's responsible for generating that part (just an example):
+  * final case class AwsKinesisStreamOut(arn: OutStringVal, id: OutStringVal)
+  */
+object OutClassCodegen {
 
   def out(name: String, outputs: List[(String, AttributeValue)]): Defn.Class = {
     Defn.Class(

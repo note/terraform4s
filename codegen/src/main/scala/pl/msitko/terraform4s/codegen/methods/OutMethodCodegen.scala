@@ -1,6 +1,6 @@
-package pl.msitko.terraform4s.codegen
+package pl.msitko.terraform4s.codegen.methods
 
-import pl.msitko.terraform4s.provider.ast.{AttributeValue, HCLAny, HCLBool, HCLNumber, HCLString, HCLType}
+import pl.msitko.terraform4s.provider.ast._
 
 import scala.meta.{Defn, Lit, Mod, Term, Type}
 

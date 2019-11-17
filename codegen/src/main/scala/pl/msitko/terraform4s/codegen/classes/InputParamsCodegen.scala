@@ -1,8 +1,8 @@
-package pl.msitko.terraform4s.codegen
+package pl.msitko.terraform4s.codegen.classes
 
-import pl.msitko.terraform4s.provider.ast.{HCLAny, HCLBool, HCLList, HCLMap, HCLNumber, HCLSet, HCLString, HCLType}
+import pl.msitko.terraform4s.provider.ast._
 
-import scala.meta._
+import scala.meta.{Term, Type}
 
 object InputParamsCodegen {
 

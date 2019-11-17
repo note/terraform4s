@@ -3,7 +3,7 @@ package pl.msitko.terraform4s
 import java.io.File
 import java.nio.file.Paths
 
-import pl.msitko.terraform4s.codegen.Codegen
+import pl.msitko.terraform4s.codegen.{Codegen, DefaultCodegenContext}
 import pl.msitko.terraform4s.provider.ast._
 import pl.msitko.terraform4s.provider.json._
 
@@ -46,7 +46,7 @@ object Main {
     val kinesisStream: Resource =
       resourcesOutput.provider_schemas.get("aws").get.resource_schemas.get("aws_kinesis_stream").get
 
-    val classDefs = Codegen.fromResource("AwsKinesisStream", kinesisStream, Map.empty)
+    val classDefs = Codegen.fromResource("AwsKinesisStream", kinesisStream, new DefaultCodegenContext)
 //    println(s"structure: ${classDefs.structure}")
 //    println(s"show: ${classDefs.show}")
     println("syntax2 : ")

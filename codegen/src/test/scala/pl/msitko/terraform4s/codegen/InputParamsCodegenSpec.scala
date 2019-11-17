@@ -1,6 +1,7 @@
 package pl.msitko.terraform4s.codegen
 
 import org.scalatest.{Matchers, WordSpec}
+import pl.msitko.terraform4s.codegen.classes.InputParamsCodegen
 import pl.msitko.terraform4s.provider.ast.{HCLAny, HCLBool, HCLList, HCLMap, HCLNumber, HCLSet, HCLString}
 
 import scala.meta._
@@ -96,6 +97,6 @@ class InputParamsCodegenSpec extends WordSpec with Matchers {
     "work for HCL objects" in pending
   }
 
-  def toTpe(s: String) =
+  def toTpe(s: String): Type =
     s.parse[Type].get
 }
