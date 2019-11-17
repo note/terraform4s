@@ -38,17 +38,18 @@ object InputParamsCodegen {
   }
 
   // non tailrec
-  private def nestedToType(tpe: HCLType): List[Type] = tpe match {
-    case HCLString => List(Type.Name("String"))
-    case HCLNumber => List(Type.Name("Int"))
-    case HCLBool   => List(Type.Name("Boolean"))
-    case HCLAny    => List(Type.Name("Any"))
-    case HCLList(innerTpe) =>
-      List(Type.Apply(Type.Name("OutVal"), List(Type.Apply(Type.Name("List"), nestedToType((innerTpe))))))
-    case HCLSet(innerTpe) => List(Type.Apply(Type.Name("Set"), nestedToType(innerTpe)))
-    case HCLMap(innerTpe) => List(Type.Apply(Type.Name("Map"), List(Type.Name("String")) ++ nestedToType(innerTpe)))
-    case e =>
-      println("unexpected2: " + e)
-      ???
-  }
+  private def nestedToType(tpe: HCLType): List[Type] =
+    List(tpe match {
+      case HCLString => Type.Name("String")
+      case HCLNumber => Type.Name("Int")
+      case HCLBool   => Type.Name("Boolean")
+      case HCLAny    => Type.Name("Any")
+      case HCLList(innerTpe) =>
+        Type.Apply(Type.Name("OutVal"), List(Type.Apply(Type.Name("List"), nestedToType(innerTpe))))
+      case HCLSet(innerTpe) => Type.Apply(Type.Name("Set"), nestedToType(innerTpe))
+      case HCLMap(innerTpe) => Type.Apply(Type.Name("Map"), List(Type.Name("String")) ++ nestedToType(innerTpe))
+      case e =>
+        println("unexpected2: " + e)
+        ???
+    })
 }
