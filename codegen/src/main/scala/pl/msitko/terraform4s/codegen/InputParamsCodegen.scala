@@ -1,30 +1,21 @@
 package pl.msitko.terraform4s.codegen
 
-import pl.msitko.terraform4s.provider.ast.{
-  AttributeValue,
-  HCLAny,
-  HCLBool,
-  HCLMap,
-  HCLNumber,
-  HCLSet,
-  HCLString,
-  HCLType
-}
+import pl.msitko.terraform4s.provider.ast.{HCLAny, HCLBool, HCLMap, HCLNumber, HCLSet, HCLString, HCLType}
 
 import scala.meta._
 
 object InputParamsCodegen {
 
-  def requiredParams(params: List[(String, AttributeValue)]): List[Term.Param] =
+  def requiredParams(params: List[(String, HCLType)]): List[Term.Param] =
     params.map {
-      case (fieldName, attr) =>
-        Term.Param(Nil, Term.Name(fieldName), Some(toType(attr.`type`)), None)
+      case (fieldName, attrType) =>
+        Term.Param(Nil, Term.Name(fieldName), Some(toType(attrType)), None)
     }
 
-  def optionalParams(params: List[(String, AttributeValue)]): List[Term.Param] =
+  def optionalParams(params: List[(String, HCLType)]): List[Term.Param] =
     params.map {
-      case (fieldName, attr) =>
-        Term.Param(Nil, Term.Name(fieldName), Some(Type.Apply(Type.Name("Option"), List(toType(attr.`type`)))), None)
+      case (fieldName, attrType) =>
+        Term.Param(Nil, Term.Name(fieldName), Some(Type.Apply(Type.Name("Option"), List(toType(attrType)))), None)
     }
 
   // @tailrec , non tailrec

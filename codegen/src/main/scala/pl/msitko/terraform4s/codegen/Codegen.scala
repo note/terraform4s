@@ -29,18 +29,21 @@ object Codegen {
   private def generateResourceClass(name: String, v: Resource, hclObjectsCache: CacheType): List[Defn.Class] = {
     val outTypeName = name + "Out"
 
+    val requiredParams = InputParamsCodegen.requiredParams(v.block.requiredInputs.map(t => (t._1, t._2.`type`)))
+    val optionalParams = InputParamsCodegen.optionalParams(v.block.optionalInputs.map(t => (t._1, t._2.`type`)))
+
     // format: off
     List(
       OutCodegen.out(outTypeName, v.block.outputs),
       Defn.Class(List(Mod.Final(), Mod.Case()), Type.Name(name), Nil, Ctor.Primary(Nil, Name(""), List(
-        InputParamsCodegen.requiredParams(v.block.requiredInputs) ++ InputParamsCodegen.optionalParams(v.block.optionalInputs),
+        requiredParams ++ optionalParams,
         List(Term.Param(List(Mod.Implicit()), Term.Name("r"), Some(Type.Name("ProvidersRoot")), None))
       )),
         Template(Nil, List(Init(Type.Apply(Type.Name("Resource"), List(Type.Name(outTypeName))), Name(""), List(List(Term.Name("r"))))), Self(Name(""), None),
           List(
             OutMethodCodegen.generate(name + "Out", v.block.outputs),
-            FieldsMethod.generate(v.block.requiredInputs),
-            FieldsMethod.generateOptionalFields(v.block.optionalInputs),
+            FieldsMethods.generate(v.block.requiredInputs),
+            FieldsMethods.generateOptionalFields(v.block.optionalInputs),
             Defn.Def(List(Mod.Override()), Term.Name("schemaName"), Nil, Nil, Some(Type.Name("String")), Lit.String(name))
           )
         )
