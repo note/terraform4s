@@ -1,12 +1,42 @@
 package pl.msitko.terraform4s.codegen
 
 import org.scalatest.{Matchers, WordSpec}
+import pl.msitko.terraform4s.provider.ast.{HCLAny, HCLBool, HCLList, HCLMap, HCLNumber, HCLSet, HCLString}
 
-// TODO: test some deeply nested types
+import scala.meta._
+
 class InputParamsCodegenSpec extends WordSpec with Matchers {
   "InputParamsCodegen.requiredParams" should {
-    "work" in {
-//      InputParamsCodegen.requiredParams()
+    "work for primitive types" in {
+      val in =
+        List("some_string" -> HCLString, "some_number" -> HCLNumber, "some_bool" -> HCLBool, "some_any" -> HCLAny)
+      val res = InputParamsCodegen.requiredParams(in)
+
+      val expected = List(
+        Term.Param(Nil, Term.Name("some_string"), Some(toTpe("OutStringVal")), None),
+        Term.Param(Nil, Term.Name("some_number"), Some(toTpe("OutVal[Int]")), None),
+        Term.Param(Nil, Term.Name("some_bool"), Some(toTpe("OutVal[Boolean]")), None),
+        Term.Param(Nil, Term.Name("some_any"), Some(toTpe("OutVal[Any]")), None)
+      )
+
+      assert(res.structure === expected.structure)
+    }
+
+    "work for collection types" in {
+      val in = List("some_list" -> HCLList(HCLString), "some_set" -> HCLSet(HCLNumber), "some_map" -> HCLMap(HCLBool))
+
+      val res = InputParamsCodegen.requiredParams(in)
+
+      val expected = List(
+        Term.Param(Nil, Term.Name("some_list"), Some(toTpe("OutVal[List[String]]")), None),
+        Term.Param(Nil, Term.Name("some_set"), Some(toTpe("OutVal[Set[Int]]")), None),
+        Term.Param(Nil, Term.Name("some_map"), Some(toTpe("OutVal[Map[String, Boolean]]")), None)
+      )
+
+      assert(res.structure === expected.structure)
     }
   }
+
+  def toTpe(s: String) =
+    s.parse[Type].get
 }
