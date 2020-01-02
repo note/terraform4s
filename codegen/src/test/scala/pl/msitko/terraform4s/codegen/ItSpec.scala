@@ -18,7 +18,7 @@ class ItSpec extends WordSpec with Matchers {
 
       val resourceSchemas = resourcesOutput.provider_schemas.get("aws").get.resource_schemas
 
-      assert(resourceSchemas.size === 527)
+      assert(resourceSchemas.size === 539)
       val simpleEnoughResource = resourceSchemas.get("aws_kinesis_stream").get
 
       val classDefs = Codegen.fromResource("AwsKinesisStream", simpleEnoughResource, new DefaultCodegenContext)
