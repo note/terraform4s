@@ -6,27 +6,15 @@ import pl.msitko.terraform4s.provider.ast.{HCLObject, _}
 
 import scala.meta._
 
-trait CodegenContext {
-  def getNextAnonymousClassName: String
-  def registerAnonymousClass(className: String, classInput: HCLObject): Unit
-  def getNameOf(classInput: HCLObject): Option[String]
-}
-
-class DefaultCodegenContext extends CodegenContext {
-  private var map: Map[HCLObject, String] = Map.empty
-
-  override def getNextAnonymousClassName: String = s"Anonymous${map.size}"
-
-  override def registerAnonymousClass(className: String, classInput: HCLObject): Unit =
-    map += (classInput -> className)
-
-  override def getNameOf(classInput: HCLObject): Option[String] =
-    map.get(classInput)
-}
-
 object Codegen {
 
-  def fromResource(name: String, resource: Resource, ctx: CodegenContext): List[Defn.Class] = {
+  def generateResources(resources: Map[String, Resource], packageName: Term.Select, ctx: CodegenContext): List[Source] =
+    resources.map {
+      case (name, resource) =>
+        generateResource(toCamelCase(name), resource, packageName, ctx)
+    }.toList
+
+  def generateResource(name: String, resource: Resource, packageName: Term.Select, ctx: CodegenContext): Source = {
     // so far we are only interested in arguments, very naive logic (validate later):
     val arguments: List[(String, AttributeValue)] = resource.block.attributes.filter {
       case (_, v) => v.optional.isDefined || v.required == Some(true)
@@ -42,14 +30,28 @@ object Codegen {
       AnonymousClassCodegen.fromHCLObject(syntheticClassName, obj, ctx)
     }
 
-    anonymousClassesDefs ++ generateResourceClass(name, resource, ctx)
+    val imports = List(
+      Import(
+        List(
+          Importer(
+            Term.Select(Term.Select(Term.Name("pl"), Term.Name("msitko")), Term.Name("terraform4s")),
+            List(Importee.Name(Name("Resource")))))))
+    val classDefs = anonymousClassesDefs ++ generateResourceClass(name, resource, ctx)
+
+    Source(
+      List(Pkg(packageName, imports ++ classDefs))
+    )
   }
+
+  // copied from https://stackoverflow.com/a/37619752
+  private def toCamelCase(in: String) =
+    "_([a-z\\d])".r.replaceAllIn(in, _.group(1).toUpperCase)
 
   private def generateResourceClass(name: String, v: Resource, ctx: CodegenContext): List[Defn.Class] = {
     val outTypeName = name + "Out"
 
-    val requiredParams = InputParamsCodegen.requiredParams(v.block.requiredInputs.map(t => (t._1, t._2.`type`)))
-    val optionalParams = InputParamsCodegen.optionalParams(v.block.optionalInputs.map(t => (t._1, t._2.`type`)))
+    val requiredParams = InputParamsCodegen.requiredParams(v.block.requiredInputs.map(t => (t._1, t._2.`type`)), ctx)
+    val optionalParams = InputParamsCodegen.optionalParams(v.block.optionalInputs.map(t => (t._1, t._2.`type`)), ctx)
 
     // format: off
     List(

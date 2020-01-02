@@ -6,6 +6,9 @@ import java.nio.file.Paths
 import pl.msitko.terraform4s.codegen.{Codegen, DefaultCodegenContext}
 import pl.msitko.terraform4s.provider.ast._
 import pl.msitko.terraform4s.provider.json._
+import org.scalafmt.interfaces.Scalafmt
+
+import scala.meta.Term
 
 /**
   * Generates scala code out of `terraform providers schema -json`
@@ -46,31 +49,17 @@ object Main {
     val kinesisStream: Resource =
       resourcesOutput.provider_schemas.get("aws").get.resource_schemas.get("aws_kinesis_stream").get
 
-    val classDefs = Codegen.fromResource("AwsKinesisStream", kinesisStream, new DefaultCodegenContext)
-//    println(s"structure: ${classDefs.structure}")
-//    println(s"show: ${classDefs.show}")
-    println("syntax2 : ")
-    classDefs.map(_.syntax).foreach(println)
+    val packageName = Term.Select(Term.Select(Term.Name("pl"), Term.Name("msitko")), Term.Name("example"))
+    val ctx         = new DefaultCodegenContext
+    val src         = Codegen.generateResource("AwsKinesisStream", kinesisStream, packageName, ctx)
 
-    import org.scalafmt.interfaces.Scalafmt
     val scalafmt = Scalafmt.create(this.getClass.getClassLoader)
 
     val conf = Paths.get(".scalafmt.conf")
 
-    import scala.meta._
-    val imports = Import(
-      List(
-        Importer(
-          Term.Select(Term.Select(Term.Name("pl"), Term.Name("msitko")), Term.Name("terraform4s")),
-          List(Importee.Name(Name("Resource"))))))
-
-    val src = Source(List(imports) ++ classDefs)
-
     val formatted = scalafmt.format(conf, Paths.get("whatever.scala"), src.syntax)
     println("--------- FORMATTED -------")
     println(formatted)
-    //    println(s"structure2: ${classDefs.head.structure}")
-//    println(s"show 2: ${classDefs.head.show}")
   }
 }
 

@@ -33,7 +33,9 @@ object QuickCheck {
 
   def main(args: Array[String]): Unit = {
     val r =
-      """import pl.msitko.terraform4s.Resource
+      """package pl.msitko.example
+        |
+        |import pl.msitko.terraform4s.Resource
         |final case class DynamoResourceOut(output1: OutStringVal, output2: OutVal[Boolean], input3: Option[Val[String]] = None)
         |
         |final case class DynamoResource(input1: Val[String], input2: Val[Boolean])(implicit r: ProvidersRoot)

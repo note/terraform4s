@@ -1,15 +1,16 @@
+package pl.msitko.example
 import pl.msitko.terraform4s.Resource
 final case class AwsKinesisStreamOut(arn: OutStringVal, id: OutStringVal)
 
 final case class AwsKinesisStream(
-    name: OutStringVal,
-    shard_count: OutVal[Int],
-    encryption_type: Option[OutStringVal],
-    enforce_consumer_deletion: Option[OutVal[Boolean]],
-    kms_key_id: Option[OutStringVal],
-    retention_period: Option[OutVal[Int]],
-    shard_level_metrics: Option[OutVal[Set[String]]],
-    tags: Option[OutVal[Map[String, String]]])(implicit r: ProvidersRoot)
+    name: Val[String],
+    shard_count: Val[Int],
+    encryption_type: Option[Val[String]],
+    enforce_consumer_deletion: Option[Val[Boolean]],
+    kms_key_id: Option[Val[String]],
+    retention_period: Option[Val[Int]],
+    shard_level_metrics: Option[Val[Set[String]]],
+    tags: Option[Val[Map[String, String]]])(implicit r: ProvidersRoot)
     extends Resource[AwsKinesisStreamOut](r) {
 
   override def out =
