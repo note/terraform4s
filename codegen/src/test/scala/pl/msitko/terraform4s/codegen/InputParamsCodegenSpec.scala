@@ -1,12 +1,12 @@
 package pl.msitko.terraform4s.codegen
 
-import org.scalatest.{Matchers, WordSpec}
 import pl.msitko.terraform4s.codegen.classes.InputParamsCodegen
-import pl.msitko.terraform4s.provider.ast.{HCLAny, HCLBool, HCLList, HCLMap, HCLNumber, HCLObject, HCLSet, HCLString}
+import pl.msitko.terraform4s.codegen.common.UnitSpec
+import pl.msitko.terraform4s.provider.ast._
 
 import scala.meta._
 
-class InputParamsCodegenSpec extends WordSpec with Matchers {
+class InputParamsCodegenSpec extends UnitSpec {
   val syntheticName = "Anonymous0"
 
   val defaultCtx = new CodegenContext {

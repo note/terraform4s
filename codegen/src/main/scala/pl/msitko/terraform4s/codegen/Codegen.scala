@@ -1,20 +1,44 @@
 package pl.msitko.terraform4s.codegen
 
+import java.nio.file.{Path, Paths}
+
+import org.scalafmt.interfaces.Scalafmt
 import pl.msitko.terraform4s.codegen.classes.{AnonymousClassCodegen, InputParamsCodegen, OutClassCodegen}
 import pl.msitko.terraform4s.codegen.methods.{FieldsMethods, OutMethodCodegen}
 import pl.msitko.terraform4s.provider.ast.{HCLObject, _}
 
 import scala.meta._
+import scala.util.Try
 
 object Codegen {
 
-  def generateResources(resources: Map[String, Resource], packageName: Term.Select, ctx: CodegenContext): List[Source] =
-    resources.map {
-      case (name, resource) =>
-        generateResource(toCamelCase(name), resource, packageName, ctx)
-    }.toList
+  def generateAndSave(
+      resources: Map[String, Resource],
+      packageName: List[String],
+      outputPath: Path,
+      scalafmtConfPath: Path,
+      ctx: CodegenContext): Try[Unit] = Try {
 
-  def generateResource(name: String, resource: Resource, packageName: Term.Select, ctx: CodegenContext): Source = {
+    val scalafmt = Scalafmt.create(this.getClass.getClassLoader)
+
+    val outputWithPackagePath = packageName.foldLeft(os.Path(outputPath)) { (acc, curr) =>
+      acc / curr
+    }
+    os.makeDir.all(outputWithPackagePath)
+
+    resources.map {
+      case (k, v) =>
+        val nameInCC = toCamelCase(k)
+        val source   = generateResource(nameInCC, v, toTermSelect(packageName), ctx)
+
+        // TODO: document "whatever.scala" part
+        val formatted = scalafmt.format(scalafmtConfPath, Paths.get("whatever.scala"), source.syntax)
+
+        os.write(outputWithPackagePath / (nameInCC + ".scala"), formatted)
+    }
+  }
+
+  def generateResource(name: String, resource: Resource, packageName: Option[Term.Ref], ctx: CodegenContext): Source = {
     // so far we are only interested in arguments, very naive logic (validate later):
     val arguments: List[(String, AttributeValue)] = resource.block.attributes.filter {
       case (_, v) => v.optional.isDefined || v.required == Some(true)
@@ -38,10 +62,25 @@ object Codegen {
             List(Importee.Name(Name("Resource")))))))
     val classDefs = anonymousClassesDefs ++ generateResourceClass(name, resource, ctx)
 
-    Source(
-      List(Pkg(packageName, imports ++ classDefs))
-    )
+    packageName.fold(Source(imports ++ classDefs)) { pkgName =>
+      Source(List(Pkg(pkgName, imports ++ classDefs)))
+    }
   }
+
+  Term.Select(Term.Select(Term.Select(Term.Name("a"), Term.Name("b")), Term.Name("c")), Term.Name("d"))
+
+  def toTermSelect(packageComponents: List[String]): Option[Term.Ref] =
+    if (packageComponents.nonEmpty) {
+      Some(
+        packageComponents.tail.foldLeft(Term.Name(packageComponents.head): Term.Ref) { (acc, curr) =>
+          Term.Select(acc, Term.Name(curr))
+        }
+      )
+    } else {
+      None
+    }
+
+  val packageName = Term.Select(Term.Select(Term.Name("pl"), Term.Name("msitko")), Term.Name("example"))
 
   // copied from https://stackoverflow.com/a/37619752
   private def toCamelCase(in: String) =

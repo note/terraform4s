@@ -1,11 +1,12 @@
 package pl.msitko.terraform4s.codegen.classes
 
-import org.scalatest.{Matchers, WordSpec}
 import pl.msitko.terraform4s.codegen.DefaultCodegenContext
+import pl.msitko.terraform4s.codegen.common.UnitSpec
 import pl.msitko.terraform4s.provider.ast.{HCLList, HCLNumber, HCLObject, HCLString}
+
 import scala.meta._
 
-class AnonymousClassCodegenSpec extends WordSpec with Matchers {
+class AnonymousClassCodegenSpec extends UnitSpec {
   "AnonymousClassCodegen.fromHCLObject" should {
     "work" in {
       val obj =

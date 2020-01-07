@@ -46,20 +46,13 @@ object Main {
 
     println(s"$inputFile parsed as TerraformResourcesOutput")
     println(resourcesOutput.provider_schemas.get("aws").get.resource_schemas.size)
-    val kinesisStream: Resource =
-      resourcesOutput.provider_schemas.get("aws").get.resource_schemas.get("aws_kinesis_stream").get
+    val resources = resourcesOutput.provider_schemas.get("aws").get.resource_schemas.take(5)
 
-    val packageName = Term.Select(Term.Select(Term.Name("pl"), Term.Name("msitko")), Term.Name("example"))
-    val ctx         = new DefaultCodegenContext
-    val src         = Codegen.generateResource("AwsKinesisStream", kinesisStream, packageName, ctx)
-
-    val scalafmt = Scalafmt.create(this.getClass.getClassLoader)
-
-    val conf = Paths.get(".scalafmt.conf")
-
-    val formatted = scalafmt.format(conf, Paths.get("whatever.scala"), src.syntax)
-    println("--------- FORMATTED -------")
-    println(formatted)
+    val packageName  = List("pl", "msitko", "example")
+    val ctx          = new DefaultCodegenContext
+    val outPath      = (os.pwd / "out").toNIO
+    val scalafmtPath = (os.pwd / ".scalafmt").toNIO
+    println(Codegen.generateAndSave(resources, packageName, outPath, scalafmtPath, ctx))
   }
 }
 
