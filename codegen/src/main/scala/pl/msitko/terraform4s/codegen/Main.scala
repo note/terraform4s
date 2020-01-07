@@ -45,13 +45,13 @@ object Main {
     }
 
     println(s"$inputFile parsed as TerraformResourcesOutput")
-    println(resourcesOutput.provider_schemas.get("aws").get.resource_schemas.size)
-    val resources = resourcesOutput.provider_schemas.get("aws").get.resource_schemas.take(5)
+    println(resourcesOutput.provider_schemas.head._2.resource_schemas.size)
+    val resources = resourcesOutput.provider_schemas.head._2.resource_schemas.take(5)
 
     val packageName  = List("pl", "msitko", "example")
     val ctx          = new DefaultCodegenContext
     val outPath      = (os.pwd / "out").toNIO
-    val scalafmtPath = (os.pwd / ".scalafmt").toNIO
+    val scalafmtPath = (os.pwd / ".scalafmt.conf").toNIO
     println(Codegen.generateAndSave(resources, packageName, outPath, scalafmtPath, ctx))
   }
 }

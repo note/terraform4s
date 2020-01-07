@@ -28,7 +28,7 @@ object Codegen {
 
     resources.map {
       case (k, v) =>
-        val nameInCC = toCamelCase(k)
+        val nameInCC = toPascalCase(k)
         val source   = generateResource(nameInCC, v, toTermSelect(packageName), ctx)
 
         // TODO: document "whatever.scala" part
@@ -81,6 +81,9 @@ object Codegen {
     }
 
   val packageName = Term.Select(Term.Select(Term.Name("pl"), Term.Name("msitko")), Term.Name("example"))
+
+  private def toPascalCase(in: String) =
+    toCamelCase(in).capitalize
 
   // copied from https://stackoverflow.com/a/37619752
   private def toCamelCase(in: String) =

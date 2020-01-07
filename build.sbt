@@ -19,8 +19,8 @@ lazy val codegen = (project in file("codegen"))
       "software.amazon.awssdk" % "sdk-core" % "2.9.26", // TODO: is it needed?
       "com.beachape" %% "enumeratum" % "1.5.13",
       "com.lihaoyi" %% "os-lib" % "0.6.2",
-      "org.scalameta" %% "scalameta" % "4.2.3",
-      "org.scalameta" %% "scalafmt-dynamic" % "2.2.2",
+      "org.scalameta" %% "scalameta" % "4.3.0",
+      "org.scalameta" %% "scalafmt-dynamic" % "2.3.2",
       "org.scalatest" %% "scalatest" % "3.0.8" % Test,
       "commons-io" % "commons-io" % "2.6" % Test
     )
@@ -36,6 +36,6 @@ lazy val templating = (project in file("templating"))
     libraryDependencies ++= Seq(
       "io.circe" %% "circe-generic" % "0.12.3",
       "com.lihaoyi" %% "sourcecode" % "0.1.8",
-      "org.scalameta" %% "scalameta" % "4.2.3" // remove it, useful only for prototyping
+      "org.scalameta" %% "scalameta" % "4.3.0" // remove it, useful only for prototyping
     )
   )
