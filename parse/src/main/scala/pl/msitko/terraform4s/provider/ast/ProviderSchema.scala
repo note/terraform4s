@@ -15,15 +15,19 @@ final case class Resource(version: Int, block: Block)
 // the least surprising)
 final case class Block(attributes: List[(String, AttributeValue)]) {
 
-  // TODO: test all 3 methods
-  def optionalInputs: List[(String, AttributeValue)] =
-    attributes.filter(t => t._2.optional.getOrElse(false) && !t._2.computed.getOrElse(false))
-
+  // TODO: test all 4 methods
+  // https://www.terraform.io/docs/extend/schemas/schema-methods.html
   def requiredInputs: List[(String, AttributeValue)] =
     attributes.filter(_._2.required.getOrElse(false))
 
-  def outputs: List[(String, AttributeValue)] =
-    attributes.filter(t => t._2.optional.getOrElse(false) && t._2.computed.getOrElse(false))
+  def optionalInputs: List[(String, AttributeValue)] =
+    attributes.filter(t => t._2.optional.getOrElse(false) && !t._2.computed.getOrElse(false))
+
+  def alwaysPresentOutputs: List[(String, AttributeValue)] =
+    attributes.filter(t => t._2.optional.getOrElse(true) && t._2.computed.getOrElse(false))
+
+  def optionalOutputs: List[(String, AttributeValue)] =
+    attributes.filter(t => !t._2.optional.getOrElse(true) && t._2.computed.getOrElse(false))
 }
 
 final case class AttributeValue(

@@ -3,13 +3,13 @@ package pl.msitko.terraform4s.provider.json
 import java.nio.ByteBuffer
 
 import io.circe.Json
-import org.scalatest.{Matchers, WordSpec}
 import io.circe.jawn.parseByteBuffer
 import io.circe.parser.parse
 import org.apache.commons.io.IOUtils
+import pl.msitko.terraform4s.common.UnitSpec
 import pl.msitko.terraform4s.provider.ast._
 
-class DecoderSpec extends WordSpec with Matchers {
+class DecoderSpec extends UnitSpec {
   "ProviderSchema decoder" should {
     "work for sample file" in {
       val classloader = Thread.currentThread.getContextClassLoader
@@ -23,7 +23,7 @@ class DecoderSpec extends WordSpec with Matchers {
       val res = json.as[ProviderSchema].toOption.get
 
       val rschemas = res.provider_schemas.apply("aws").resource_schemas
-      rschemas.size should equal(4)
+      assert(rschemas.size === 4)
 
       val expected = Resource(
         0,
@@ -35,16 +35,16 @@ class DecoderSpec extends WordSpec with Matchers {
           )
         ))
 
-      rschemas.apply("aws_acm_certificate_validation") should equal(expected)
+      assert(rschemas.apply("aws_acm_certificate_validation") === expected)
     }
   }
 
   "HCLType decoder" should {
     "decode simple types" in {
-      Json.fromString("string").as[HCLType].toOption.get should equal(HCLString)
-      Json.fromString("number").as[HCLType].toOption.get should equal(HCLNumber)
-      Json.fromString("bool").as[HCLType].toOption.get should equal(HCLBool)
-      Json.fromString("any").as[HCLType].toOption.get should equal(HCLAny)
+      assert(Json.fromString("string").as[HCLType].toOption.get === HCLString)
+      assert(Json.fromString("number").as[HCLType].toOption.get === HCLNumber)
+      assert(Json.fromString("bool").as[HCLType].toOption.get === HCLBool)
+      assert(Json.fromString("any").as[HCLType].toOption.get === HCLAny)
     }
 
     "decode collection types" in {
@@ -69,7 +69,7 @@ class DecoderSpec extends WordSpec with Matchers {
             "resource_record_type"  -> HCLString,
             "resource_record_value" -> HCLString,
           )))
-      parse(str).toOption.get.as[HCLType].toOption.get should equal(expected)
+      assert(parse(str).toOption.get.as[HCLType].toOption.get === expected)
     }
   }
 

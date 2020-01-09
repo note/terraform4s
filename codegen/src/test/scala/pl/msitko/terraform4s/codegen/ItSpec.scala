@@ -20,7 +20,7 @@ class ItSpec extends UnitSpec {
       resourceSchemas.foreach { schema =>
         val (name, resource) = schema
 
-        val used = resource.block.optionalInputs ++ resource.block.requiredInputs ++ resource.block.outputs
+        val used = resource.block.optionalInputs ++ resource.block.requiredInputs ++ resource.block.alwaysPresentOutputs
 
         if (used.toSet.size != resource.block.attributes.size) {
           val diff = resource.block.attributes.toSet.diff(used.toSet).map(_._1)
