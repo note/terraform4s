@@ -17,15 +17,38 @@ class ItSpec extends UnitSpec {
 
       assert(resourceSchemas.size === 539)
 
+      resourceSchemas.foreach { schema =>
+        val (name, resource) = schema
+
+        val used = resource.block.optionalInputs ++ resource.block.requiredInputs ++ resource.block.outputs
+
+        if (used.toSet.size != resource.block.attributes.size) {
+          val diff = resource.block.attributes.toSet.diff(used.toSet).map(_._1)
+          println(s"found unused for $name: $diff")
+        }
+      }
+
       val packageName = List("pl", "msitko", "example")
       val ctx         = new DefaultCodegenContext
 
-      Codegen.generateAndSave(
-        resourceSchemas.take(3),
+      val selectedResourceNames = List(
+        "aws_accessanalyzer_analyzer",
+        "aws_acm_certificate",
+        "aws_acm_certificate_validation"
+      )
+
+      val selectedResources = resourceSchemas.view.filterKeys(selectedResourceNames.contains(_)).toMap
+
+      println(s"selected resources: ${selectedResources.size}")
+
+      val res = Codegen.generateAndSave(
+        selectedResources,
         packageName,
         (os.pwd / "out").toNIO,
         (os.pwd / ".scalafmt.conf").toNIO,
         ctx)
+
+      println("res: " + res)
 
 //      val expected = IOUtils.toString(stream, StandardCharsets.UTF_8)
 //

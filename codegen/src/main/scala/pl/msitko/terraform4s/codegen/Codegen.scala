@@ -49,6 +49,13 @@ object Codegen {
       case obj: HCLObject => obj
     }
 
+    anonymousClasses.foreach { anonymousClass =>
+      ctx.getNameOf(anonymousClass) match {
+        case None => ctx.registerAnonymousClass(ctx.getNextAnonymousClassName, anonymousClass)
+        case _    => // do nothing
+      }
+    }
+
     val anonymousClassesDefs = anonymousClasses.map { obj =>
       val syntheticClassName = ctx.getNextAnonymousClassName
       AnonymousClassCodegen.fromHCLObject(syntheticClassName, obj, ctx)
@@ -97,14 +104,14 @@ object Codegen {
 
     // format: off
     List(
-      OutClassCodegen.out(outTypeName, v.block.outputs),
+      OutClassCodegen.out(outTypeName, v.block.outputs, ctx),
       Defn.Class(List(Mod.Final(), Mod.Case()), Type.Name(name), Nil, Ctor.Primary(Nil, Name(""), List(
         requiredParams ++ optionalParams,
         List(Term.Param(List(Mod.Implicit()), Term.Name("r"), Some(Type.Name("ProvidersRoot")), None))
       )),
         Template(Nil, List(Init(Type.Apply(Type.Name("Resource"), List(Type.Name(outTypeName))), Name(""), List(List(Term.Name("r"))))), Self(Name(""), None),
           List(
-            OutMethodCodegen.generate(name + "Out", v.block.outputs),
+            OutMethodCodegen.generate(name + "Out", v.block.outputs, ctx),
             FieldsMethods.generate(v.block.requiredInputs),
             FieldsMethods.generateOptionalFields(v.block.optionalInputs),
             Defn.Def(List(Mod.Override()), Term.Name("schemaName"), Nil, Nil, Some(Type.Name("String")), Lit.String(name))
