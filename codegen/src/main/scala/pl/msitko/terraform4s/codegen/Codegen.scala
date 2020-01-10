@@ -50,7 +50,8 @@ object Codegen {
     }
 
     val anonymousClassesDefs = anonymousClasses.map { obj =>
-      val syntheticClassName = ctx.getNextAnonymousClassName
+      // we can call .get safely as we call registerAnonymousClass a few lines above for all anonymousClasses
+      val syntheticClassName = ctx.getNameOf(obj).get
       AnonymousClassCodegen.fromHCLObject(syntheticClassName, obj, ctx)
     }
 
