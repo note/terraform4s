@@ -28,6 +28,9 @@ final case class Block(attributes: List[(String, AttributeValue)]) {
 
   def optionalOutputs: List[(String, AttributeValue)] =
     attributes.filter(t => !t._2.optional.getOrElse(true) && t._2.computed.getOrElse(false))
+
+  def allObjects: List[HCLObject] =
+    attributes.map(_._2.`type`.allObjects).flatten
 }
 
 final case class AttributeValue(
@@ -38,12 +41,23 @@ final case class AttributeValue(
 )
 
 // https://www.terraform.io/docs/configuration/types.html
-sealed trait HCLType
+sealed trait HCLType {
+  // Not sure if it should live here as it can be seen as codegen implementation detail as opposed to part of AST
+  def allObjects: List[HCLObject]
+}
 
 // https://www.terraform.io/docs/configuration/types.html#primitive-types
-sealed trait PrimitiveType extends HCLType
+sealed trait PrimitiveType extends HCLType {
+  override def allObjects: List[HCLObject] = List.empty
+}
+
 // https://www.terraform.io/docs/configuration/types.html#collection-types
-sealed trait CollectionType extends HCLType
+sealed trait CollectionType extends HCLType {
+  def `type`: HCLType
+
+  override def allObjects: List[HCLObject] = `type`.allObjects
+}
+
 // https://www.terraform.io/docs/configuration/types.html#structural-types
 sealed trait StructuralType extends HCLType
 
@@ -58,6 +72,8 @@ final case class HCLSet(`type`: HCLType)  extends CollectionType
 
 // List[(String, HCLType)] so we can preserve the original ordering of fields (which is probably non critical but
 // the least surprising)
-final case class HCLObject(attributes: List[(String, HCLType)]) extends StructuralType
+final case class HCLObject(attributes: List[(String, HCLType)]) extends StructuralType {
+  override def allObjects: List[HCLObject] = this :: attributes.flatMap(_._2.allObjects)
+}
 // there's not `tuple` type in output of `terraform provider` for AWS so leaving it out for future:
 //final case class HCLTuple(`type`: HCLType) extends CollectionTypes

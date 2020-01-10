@@ -6,6 +6,7 @@ trait CodegenContext {
   def getNextAnonymousClassName: String
   def registerAnonymousClass(className: String, classInput: HCLObject): Unit
   def getNameOf(classInput: HCLObject): Option[String]
+  def out: String
 }
 
 class DefaultCodegenContext extends CodegenContext {
@@ -19,4 +20,6 @@ class DefaultCodegenContext extends CodegenContext {
 
   override def getNameOf(classInput: HCLObject): Option[String] =
     map.get(classInput)
+
+  override def out: String = map.toString()
 }

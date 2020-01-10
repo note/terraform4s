@@ -39,15 +39,8 @@ object Codegen {
   }
 
   def generateResource(name: String, resource: Resource, packageName: Option[Term.Ref], ctx: CodegenContext): Source = {
-    // so far we are only interested in arguments, very naive logic (validate later):
-    val arguments: List[(String, AttributeValue)] = resource.block.attributes.filter {
-      case (_, v) => v.optional.isDefined || v.required == Some(true)
-    }
-
     // needed for objects, way too naive to handle e.g. nested objects
-    val anonymousClasses = arguments.map(_._2.`type`).collect {
-      case obj: HCLObject => obj
-    }
+    val anonymousClasses = resource.block.allObjects
 
     anonymousClasses.foreach { anonymousClass =>
       ctx.getNameOf(anonymousClass) match {

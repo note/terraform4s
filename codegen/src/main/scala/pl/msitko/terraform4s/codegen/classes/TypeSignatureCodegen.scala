@@ -30,7 +30,9 @@ object TypeSignatureCodegen {
     case obj: HCLObject =>
       ctx.getNameOf(obj) match {
         case Some(name) => Type.Name(name)
-        case None       => throw new RuntimeException(s"No synthetic name found for $obj")
+        case None =>
+          println("content:" + ctx.out)
+          throw new RuntimeException(s"No synthetic name found for $obj")
       }
   }
 

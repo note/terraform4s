@@ -15,6 +15,8 @@ class InputParamsCodegenSpec extends UnitSpec {
     override def registerAnonymousClass(className: String, classInput: HCLObject): Unit = ???
 
     override def getNameOf(classInput: HCLObject): Option[String] = Some(syntheticName)
+
+    override def out: String = ???
   }
 
   "InputParamsCodegen.requiredParams" should {

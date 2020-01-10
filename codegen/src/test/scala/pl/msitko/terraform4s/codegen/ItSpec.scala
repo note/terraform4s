@@ -50,6 +50,12 @@ class ItSpec extends UnitSpec {
 
       println("res: " + res)
 
+      res.toEither match {
+        case Right(_) =>
+        case Left(e) =>
+          e.printStackTrace()
+      }
+
 //      val expected = IOUtils.toString(stream, StandardCharsets.UTF_8)
 //
 //      assert(actual === expected)
