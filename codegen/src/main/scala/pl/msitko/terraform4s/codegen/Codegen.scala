@@ -97,8 +97,9 @@ object Codegen {
     val optionalParams = InputParamsCodegen.optionalParams(v.block.optionalInputs.map(t => (t._1, t._2.`type`)), ctx)
 
     // format: off
+    println(s"bazinga $outTypeName: ${v.block.optionalOutputs.map(_._1)}")
     List(
-      OutClassCodegen.out(outTypeName, v.block.alwaysPresentOutputs, ctx),
+      OutClassCodegen.out(outTypeName, v.block.alwaysPresentOutputs, v.block.optionalOutputs, ctx),
       Defn.Class(List(Mod.Final(), Mod.Case()), Type.Name(name), Nil, Ctor.Primary(Nil, Name(""), List(
         requiredParams ++ optionalParams,
         List(Term.Param(List(Mod.Implicit()), Term.Name("r"), Some(Type.Name("ProvidersRoot")), None))

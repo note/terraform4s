@@ -11,7 +11,11 @@ import scala.meta.{Ctor, Defn, Mod, Name, Self, Template, Term, Type}
   */
 object OutClassCodegen {
 
-  def out(name: String, outputs: List[(String, AttributeValue)], ctx: CodegenContext): Defn.Class = {
+  def out(
+      name: String,
+      outputs: List[(String, AttributeValue)],
+      optionalOutputs: List[(String, AttributeValue)],
+      ctx: CodegenContext): Defn.Class = {
     Defn.Class(
       List(Mod.Final(), Mod.Case()),
       Type.Name(name),
@@ -20,7 +24,7 @@ object OutClassCodegen {
         Nil,
         Name(""),
         List(
-          outFields(outputs, ctx)
+          outFields(outputs, ctx) ++ optionalOutFields(optionalOutputs, ctx)
         )),
       Template(Nil, Nil, Self(Name(""), None), Nil))
   }
@@ -28,11 +32,14 @@ object OutClassCodegen {
   private def outFields(outputs: List[(String, AttributeValue)], ctx: CodegenContext): List[Term.Param] =
     outputs.map {
       case (fieldName, attr) =>
-        Term.Param(
-          mods = Nil,
-          name = Term.Name(fieldName),
-          decltpe = Some(TypeSignatureCodegen.typeStringFromType(attr.`type`, ctx)),
-          default = None)
+        val tpeSignature = TypeSignatureCodegen.fromHCLType(attr.`type`, ctx)
+        Commons.param(fieldName, tpeSignature)
     }
 
+  private def optionalOutFields(outputs: List[(String, AttributeValue)], ctx: CodegenContext): List[Term.Param] =
+    outputs.map {
+      case (fieldName, attr) =>
+        val tpeSignature = TypeSignatureCodegen.fromHCLType(attr.`type`, ctx)
+        Commons.param(fieldName, Type.Apply(Type.Name("Option"), List(tpeSignature)))
+    }
 }

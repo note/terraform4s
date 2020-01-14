@@ -20,12 +20,15 @@ class ItSpec extends UnitSpec {
       resourceSchemas.foreach { schema =>
         val (name, resource) = schema
 
-        val used = resource.block.optionalInputs ++ resource.block.requiredInputs ++ resource.block.alwaysPresentOutputs
+        val block = resource.block
+        val used  = block.optionalInputs ++ block.requiredInputs ++ block.alwaysPresentOutputs ++ block.optionalOutputs
 
         if (used.toSet.size != resource.block.attributes.size) {
           val diff = resource.block.attributes.toSet.diff(used.toSet).map(_._1)
           println(s"found unused for $name: $diff")
         }
+
+        println(s"optional outputs: $name" + resource.block.optionalOutputs.map(_._1))
       }
 
       val packageName = List("pl", "msitko", "example")

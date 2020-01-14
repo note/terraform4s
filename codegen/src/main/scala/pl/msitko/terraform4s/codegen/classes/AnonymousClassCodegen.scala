@@ -23,7 +23,7 @@ object AnonymousClassCodegen {
         Term.Param(
           mods = Nil,
           name = Term.Name(k),
-          decltpe = Some(TypeSignatureCodegen.typeStringFromType(v, ctx)),
+          decltpe = Some(TypeSignatureCodegen.fromHCLType(v, ctx)),
           default = None)
     }
 

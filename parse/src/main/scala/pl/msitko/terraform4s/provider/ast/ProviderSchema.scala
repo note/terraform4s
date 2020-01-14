@@ -1,7 +1,7 @@
 package pl.msitko.terraform4s.provider.ast
 
 /**
-  * Models JSON output of `terraform providers schema -json`
+  * Models JSON output of `aws`
   *
   * Current AST includes only attributes that are used by Scala codegen
   * In future we may add attributes present in `terraform providers schema -json`
@@ -24,10 +24,10 @@ final case class Block(attributes: List[(String, AttributeValue)]) {
     attributes.filter(t => t._2.optional.getOrElse(false) && !t._2.computed.getOrElse(false))
 
   def alwaysPresentOutputs: List[(String, AttributeValue)] =
-    attributes.filter(t => t._2.optional.getOrElse(true) && t._2.computed.getOrElse(false))
+    attributes.filter(t => !t._2.optional.getOrElse(false) && t._2.computed.getOrElse(false))
 
   def optionalOutputs: List[(String, AttributeValue)] =
-    attributes.filter(t => !t._2.optional.getOrElse(true) && t._2.computed.getOrElse(false))
+    attributes.filter(t => t._2.optional.getOrElse(false) && t._2.computed.getOrElse(false))
 
   def allObjects: List[HCLObject] =
     attributes.map(_._2.`type`.allObjects).flatten

@@ -10,9 +10,9 @@ class BlockSpec extends UnitSpec {
       "requiredInput1"       -> attr(required = Some(true), computed = Some(false)),
       "optionalInput0"       -> attr(optional = Some(true)),
       "optionalInput1"       -> attr(optional = Some(true), computed = Some(false)),
-      "alwaysPresentOutput0" -> attr(computed = Some(true), optional = Some(true)),
+      "alwaysPresentOutput0" -> attr(computed = Some(true), optional = Some(false)),
       "alwaysPresentOutput1" -> attr(computed = Some(true)),
-      "optionalOutput0"      -> attr(computed = Some(true), optional = Some(false))
+      "optionalOutput0"      -> attr(computed = Some(true), optional = Some(true))
     ))
 
   "requiredInputs" should {

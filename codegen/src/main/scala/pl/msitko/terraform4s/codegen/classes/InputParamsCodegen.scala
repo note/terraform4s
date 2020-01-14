@@ -10,41 +10,27 @@ object InputParamsCodegen {
   def requiredParams(params: List[(String, HCLType)], ctx: CodegenContext): List[Term.Param] =
     params.map {
       case (fieldName, attrType) =>
-        Term.Param(Nil, Term.Name(fieldName), Some(toType(attrType, ctx)), None)
+        Commons.param(fieldName, toType(attrType, ctx))
     }
 
   def optionalParams(params: List[(String, HCLType)], ctx: CodegenContext): List[Term.Param] =
     params.map {
       case (fieldName, attrType) =>
-        Term.Param(Nil, Term.Name(fieldName), Some(Type.Apply(Type.Name("Option"), List(toType(attrType, ctx)))), None)
+        Commons.param(fieldName, Type.Apply(Type.Name("Option"), List(toType(attrType, ctx))))
     }
 
   private def toType(tpe: HCLType, ctx: CodegenContext): Type =
-    Type.Apply(Type.Name("Val"), nestedToType(tpe, ctx))
+    Type.Apply(Type.Name("Val"), List(TypeSignatureCodegen.fromHCLType(tpe, ctx)))
 
-  // recursive but non-tailrec
-  private def nestedToType(tpe: HCLType, ctx: CodegenContext): List[Type] =
-    List(tpe match {
-      case HCLString =>
-        Type.Name("String")
-      case HCLNumber =>
-        Type.Name("Int") // TODO: change to more general representation that can hold doubles
-      case HCLBool =>
-        Type.Name("Boolean")
-      case HCLAny =>
-        Type.Name("Any")
-      case HCLList(innerTpe) =>
-        Type.Apply(Type.Name("List"), nestedToType(innerTpe, ctx))
-      case HCLSet(innerTpe) =>
-        Type.Apply(Type.Name("Set"), nestedToType(innerTpe, ctx))
-      case HCLMap(innerTpe) =>
-        Type.Apply(Type.Name("Map"), List(Type.Name("String")) ++ nestedToType(innerTpe, ctx))
-      case obj: HCLObject =>
-        ctx.getNameOf(obj) match {
-          case Some(name) =>
-            Type.Name(name)
-          case None =>
-            throw new RuntimeException(s"Cannot resolve name for HCLObject: $obj")
-        }
-    })
+}
+
+object Commons {
+
+  def param(name: String, tpe: Type): Term.Param =
+    Term.Param(
+      mods = Nil,
+      name = Term.Name(name),
+      decltpe = Some(tpe),
+      default = None
+    )
 }
