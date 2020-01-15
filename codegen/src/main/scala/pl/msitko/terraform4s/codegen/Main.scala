@@ -1,21 +1,74 @@
 package pl.msitko.terraform4s
 
 import java.io.File
-import java.nio.file.Paths
+import java.nio.file.{Path, Paths}
 
-import pl.msitko.terraform4s.codegen.{Codegen, DefaultCodegenContext}
+import cats.implicits._
+import com.monovore.decline._
+import pl.msitko.terraform4s.cli.NotResolvedConfig
+import pl.msitko.terraform4s.codegen.Codegen
 import pl.msitko.terraform4s.provider.ast._
 import pl.msitko.terraform4s.provider.json._
-import org.scalafmt.interfaces.Scalafmt
-
-import scala.meta.Term
 
 /**
   * Generates scala code out of `terraform providers schema -json`
   */
 object Main {
 
+  val codegenOpts: Opts[NotResolvedConfig] = {
+    val scalafmtPathOpt = Opts.option[Path]("scalafmt-path", help = "Path to scalafmt configuration file").orNone
+
+    val outDirOpt = Opts
+      .option[Path]("out-dir", help = "Output directory")
+      .withDefault(Paths.get("out"))
+
+    val versionsPathOpt = Opts
+      .option[Path](
+        "versions-path",
+        help =
+          "Path to the file with terraform providers versions. The file is supposed to be generated with command `terraform version`")
+      .withDefault(Paths.get("versions"))
+
+    val schemaPathOpt = Opts.option[Path](
+      "schema-path",
+      help =
+        "Path to Schema file. The Schema file is supposed to be generated with command `terraform providers schema -json`")
+
+    val packageNameOpt = Opts.option[String](
+      "out-package-name",
+      help =
+        "Package name used for output. If you specify package name as 'org.company' then the code for provider 'abc' will be generated in package 'org.company.abc'")
+
+    (scalafmtPathOpt, outDirOpt, versionsPathOpt, schemaPathOpt, packageNameOpt).mapN {
+      (scalafmtPath, outDir, versionsPath, schemaPath, packageName) =>
+        NotResolvedConfig(
+          packageNamePrefix = packageName,
+          schemaPath = schemaPath,
+          versionsPath = versionsPath,
+          outPath = outDir,
+          scalafmtPath = scalafmtPath
+        )
+    }
+  }
+
   def main(args: Array[String]): Unit = {
+    val codegen =
+      Command(name = "codegen", header = "Generate Scala code out of terraform provider's schema")(codegenOpts)
+
+    codegen.parse(args) match {
+      case Right(cfg) =>
+        cfg.resolve match {
+          case Right(resolvedConfig) =>
+            Codegen.generateAndSave(resolvedConfig)
+          case Left(msg) =>
+            System.err.println(msg)
+            sys.exit(1)
+        }
+      case Left(help) =>
+        System.err.println(help)
+        sys.exit(1)
+    }
+
     val versionsMap = Map("aws" -> "2.43.0")
 
     // inputFilePath is expected to be output of `terraform providers schema -json`
@@ -36,7 +89,7 @@ object Main {
         sys.exit(1)
     }
 
-    val resourcesOutput = json.as[ProviderSchema] match {
+    val resourcesOutput: ProviderSchema = json.as[ProviderSchema] match {
       case Right(v) => v
       case Left(e) =>
         println(s"$inputFilePath JSON cannot be parsed as TerraformResourcesOutput: $e")
@@ -49,48 +102,6 @@ object Main {
     println(s"$inputFile parsed as TerraformResourcesOutput")
     println(resourcesOutput.provider_schemas.head._2.resource_schemas.size)
 
-    resourcesOutput.provider_schemas.foreach {
-      case (providerName, provider) =>
-        val packageName  = List("pl", "msitko", providerName)
-        val ctx          = new DefaultCodegenContext
-        val outPath      = (os.pwd / "out").toNIO
-        val scalafmtPath = (os.pwd / ".scalafmt.conf").toNIO
-
-        val resources       = provider.resource_schemas.take(5)
-        val providerVersion = versionsMap.get(providerName)
-        val res =
-          Codegen.generateAndSave(providerName, providerVersion, resources, packageName, outPath, scalafmtPath, ctx)
-
-        println(res)
-    }
   }
-}
 
-import pl.msitko.terraform4s.Resource
-final case class AwsKinesisStreamOut(arn: OutStringVal, id: OutStringVal)
-
-final case class AwsKinesisStream(
-    name: OutStringVal,
-    shard_count: OutVal[Int],
-    encryption_type: Option[OutStringVal],
-    enforce_consumer_deletion: Option[OutVal[Boolean]],
-    kms_key_id: Option[OutStringVal],
-    retention_period: Option[OutVal[Int]],
-    shard_level_metrics: Option[OutVal[Set[String]]],
-    tags: Option[OutVal[Map[String, String]]])(implicit r: ProvidersRoot)
-    extends Resource[AwsKinesisStreamOut](r) {
-
-  override def out =
-    AwsKinesisStreamOut(OutStringVal(schemaName, resourceName, "arn"), OutStringVal(schemaName, resourceName, "id"))
-  override def fields: List[Field] = List(Field("name", name), Field("shard_count", shard_count))
-
-  override def optionalFields: List[Option[Field]] =
-    List(
-      encryption_type.map(i => Field("encryption_type", i)),
-      enforce_consumer_deletion.map(i => Field("enforce_consumer_deletion", i)),
-      kms_key_id.map(i => Field("kms_key_id", i)),
-      retention_period.map(i => Field("retention_period", i)),
-      shard_level_metrics.map(i => Field("shard_level_metrics", i)),
-      tags.map(i => Field("tags", i)))
-  override def schemaName: String = "AwsKinesisStream"
 }

@@ -1,9 +1,10 @@
 package pl.msitko.terraform4s.codegen
 
-import java.nio.file.{Path, Paths}
 import java.time.Instant
 
-import org.scalafmt.interfaces.Scalafmt
+import org.scalafmt.config.ScalafmtConfig
+import org.scalafmt.{Formatted, Scalafmt}
+import pl.msitko.terraform4s.cli.Config
 import pl.msitko.terraform4s.codegen.classes.{AnonymousClassCodegen, InputParamsCodegen, OutClassCodegen}
 import pl.msitko.terraform4s.codegen.comments.FileLevelCommentCodegen
 import pl.msitko.terraform4s.codegen.methods.{FieldsMethods, OutMethodCodegen}
@@ -14,34 +15,42 @@ import scala.util.Try
 
 object Codegen {
 
-  def generateAndSave(
-      providerName: String,
-      providerVersion: Option[String],
-      resources: Map[String, Resource],
-      packageName: List[String],
-      outputPath: Path,
-      scalafmtConfPath: Path,
-      ctx: CodegenContext): Try[Unit] = Try {
+  // TODO: is try a good return type?
+  def generateAndSave(config: Config): Try[Unit] = Try {
 
-    val scalafmt = Scalafmt.create(this.getClass.getClassLoader)
+    config.providerSchemas.provider_schemas.foreach {
+      case (providerName, providerSchema) =>
+        val ctx = new DefaultCodegenContext
 
-    val outputWithPackagePath = packageName.foldLeft(os.Path(outputPath)) { (acc, curr) =>
-      acc / curr
-    }
-    os.makeDir.all(outputWithPackagePath)
+        val packageName = config.packageNamePrefix :+ providerName
 
-    resources.map {
-      case (k, v) =>
-        val nameInCC = toPascalCase(k)
-        val source   = generateResource(nameInCC, v, toTermSelect(packageName), ctx)
+        val outputWithPackagePath = packageName.foldLeft(os.Path(config.outPath)) { (acc, curr) =>
+          acc / curr
+        }
+        os.makeDir.all(outputWithPackagePath)
 
-        val now     = Instant.now
-        val comment = FileLevelCommentCodegen.generate(now, providerName, providerVersion)
-        // TODO: document "whatever.scala" part
-        val formatted = scalafmt.format(scalafmtConfPath, Paths.get("whatever.scala"), source.syntax)
+        providerSchema.resource_schemas.map {
+          case (k, v) =>
+            val nameInCC = toPascalCase(k)
+            val source   = generateResource(nameInCC, v, toTermSelect(packageName), ctx)
 
-        os.write(outputWithPackagePath / (nameInCC + ".scala"), comment)
-        os.write.append(outputWithPackagePath / (nameInCC + ".scala"), formatted)
+            val now = Instant.now
+            val comment = {
+              val tfVersion       = config.versions.terraformVersion
+              val providerVersion = config.versions.providersVersions.get(providerName)
+              FileLevelCommentCodegen.generate(now, tfVersion, providerName, providerVersion)
+            }
+
+            val formattedCode = Scalafmt.format(source.syntax, config.scalafmtConf) match {
+              case Formatted.Success(formatted) =>
+                formatted
+              case Formatted.Failure(e) =>
+                throw new RuntimeException(s"Formatting with scalafmt failed: $e", e)
+            }
+
+            os.write(outputWithPackagePath / (nameInCC + ".scala"), comment)
+            os.write.append(outputWithPackagePath / (nameInCC + ".scala"), formattedCode)
+        }
     }
   }
 
@@ -87,8 +96,6 @@ object Codegen {
     } else {
       None
     }
-
-  val packageName = Term.Select(Term.Select(Term.Name("pl"), Term.Name("msitko")), Term.Name("example"))
 
   private def toPascalCase(in: String) =
     toCamelCase(in).capitalize

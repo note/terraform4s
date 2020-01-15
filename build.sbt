@@ -20,7 +20,12 @@ lazy val codegen = (project in file("codegen"))
       "com.beachape" %% "enumeratum" % "1.5.13",
       "com.lihaoyi" %% "os-lib" % "0.6.2",
       "org.scalameta" %% "scalameta" % "4.3.0",
-      "org.scalameta" %% "scalafmt-dynamic" % "2.3.2",
+      // why not "org.scalameta" %% "scalafmt-dynamic" % "2.3.2"?
+      // Because scalafmt-core has API in which configuration can be passed as ScalafmtConfig instead
+      // of Path. And we want to provide default configuration in case user has not provided custom configuration
+      // in a file
+      "org.scalameta" %% "scalafmt-core" % "2.3.2",
+      "com.monovore" %% "decline" % "1.0.0",
       "org.scalatest" %% "scalatest" % "3.0.8" % Test,
       "commons-io" % "commons-io" % "2.6" % Test
     )
