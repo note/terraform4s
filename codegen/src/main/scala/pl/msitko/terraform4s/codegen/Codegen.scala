@@ -7,7 +7,7 @@ import org.scalafmt.interfaces.Scalafmt
 import pl.msitko.terraform4s.codegen.classes.{AnonymousClassCodegen, InputParamsCodegen, OutClassCodegen}
 import pl.msitko.terraform4s.codegen.comments.FileLevelCommentCodegen
 import pl.msitko.terraform4s.codegen.methods.{FieldsMethods, OutMethodCodegen}
-import pl.msitko.terraform4s.provider.ast.{HCLObject, _}
+import pl.msitko.terraform4s.provider.ast._
 
 import scala.meta._
 import scala.util.Try
