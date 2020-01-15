@@ -15,6 +15,5 @@ object FileLevelCommentCodegen {
        |  * Provider name: $providerName
        |  * Provider version: ${providerVersion.getOrElse("unknown")}
        |  */
-       |
        |""".stripMargin
 }

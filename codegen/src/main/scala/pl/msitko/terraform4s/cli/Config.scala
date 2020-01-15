@@ -2,10 +2,10 @@ package pl.msitko.terraform4s.cli
 
 import java.nio.file.Path
 
+import metaconfig.Configured
 import org.scalafmt.Scalafmt
 import org.scalafmt.config.ScalafmtConfig
 import pl.msitko.terraform4s.provider.ast.ProviderSchema
-
 import pl.msitko.terraform4s.provider.json._
 
 import scala.util.Try
@@ -16,6 +16,11 @@ final case class Config(
     versions: Versions,
     outPath: Path,
     scalafmtConf: ScalafmtConfig)
+
+final case class Versions(
+    terraformVersion: String,
+    providersVersions: Map[String, String]
+)
 
 final case class NotResolvedConfig(
     packageNamePrefix: String,
@@ -55,7 +60,7 @@ final case class NotResolvedConfig(
       case Some(path) =>
         parseConfig(path)
       case None =>
-        Right(ScalafmtConfig.default)
+        Right(NotResolvedConfig.getDefaultScalafmtConfig)
     }
   }
 
@@ -65,4 +70,31 @@ final case class NotResolvedConfig(
       json      <- io.circe.jawn.parseFile(inputFile).left.map(e => s"Cannot parse $inputPath as JSON: $e")
       schema    <- json.as[ProviderSchema].left.map(e => s"Cannot parse $inputPath as ProviderSchema: $e")
     } yield schema
+}
+
+object NotResolvedConfig {
+
+  val DefaultScalafmtConfig = {
+    val input = """align = more
+                  |assumeStandardLibraryStripMargin = true
+                  |binPack.parentConstructors = true
+                  |danglingParentheses = false
+                  |indentOperator = spray
+                  |maxColumn = 120
+                  |newlines.alwaysBeforeTopLevelStatements = true
+                  |rewrite.redundantBraces.maxLines = 5
+                  |rewrite.rules = [RedundantBraces, RedundantParens, SortImports, SortModifiers, PreferCurlyFors]
+                  |runner.optimizer.forceConfigStyleOnOffset = -1
+                  |trailingCommas = preserve
+                  |verticalMultiline.arityThreshold = 120""".stripMargin
+
+    Scalafmt.parseHoconConfig(input)
+  }
+
+  def getDefaultScalafmtConfig = DefaultScalafmtConfig match {
+    case Configured.Ok(cfg) => cfg
+    case Configured.NotOk(err) =>
+      System.err.println(s"Cannot parse default scalafmt config due to $err. Falling back to ScalafmtConfig.default")
+      ScalafmtConfig.default
+  }
 }

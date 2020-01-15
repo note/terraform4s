@@ -28,6 +28,31 @@ class TerraformVersionParserSpec extends UnitSpec {
       assert(res === Right(expected))
     }
 
+    "be flexible to some extend" in {
+      val in =
+        """something unexpected
+          |Terraform v0.12.19
+          |+ provider.aws v2.43.0
+          |+ provider.digitalocean v1.12.0
+          |+ provider.fastly v0.11.1
+          |+ provider.github v2.2.1
+          |""".stripMargin
+
+      val res = TerraformVersionParser.parse(in)
+
+      val expected = Versions(
+        terraformVersion = "0.12.19",
+        providersVersions = Map(
+          "aws"          -> "2.43.0",
+          "digitalocean" -> "1.12.0",
+          "fastly"       -> "0.11.1",
+          "github"       -> "2.2.1"
+        )
+      )
+
+      assert(res === Right(expected))
+    }
+
     "skip incorrect lines" in {
       val in =
         """Terraform v0.12.19
@@ -58,7 +83,7 @@ class TerraformVersionParserSpec extends UnitSpec {
 
       val res = TerraformVersionParser.parse(in)
 
-      assert(res === Left("Missing terraform version"))
+      assert(res === Left("Cannot parse terraform version"))
     }
 
   }
