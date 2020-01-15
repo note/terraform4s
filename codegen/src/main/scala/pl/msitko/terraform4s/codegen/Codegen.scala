@@ -1,9 +1,11 @@
 package pl.msitko.terraform4s.codegen
 
 import java.nio.file.{Path, Paths}
+import java.time.Instant
 
 import org.scalafmt.interfaces.Scalafmt
 import pl.msitko.terraform4s.codegen.classes.{AnonymousClassCodegen, InputParamsCodegen, OutClassCodegen}
+import pl.msitko.terraform4s.codegen.comments.FileLevelCommentCodegen
 import pl.msitko.terraform4s.codegen.methods.{FieldsMethods, OutMethodCodegen}
 import pl.msitko.terraform4s.provider.ast.{HCLObject, _}
 
@@ -13,6 +15,8 @@ import scala.util.Try
 object Codegen {
 
   def generateAndSave(
+      providerName: String,
+      providerVersion: Option[String],
       resources: Map[String, Resource],
       packageName: List[String],
       outputPath: Path,
@@ -31,10 +35,13 @@ object Codegen {
         val nameInCC = toPascalCase(k)
         val source   = generateResource(nameInCC, v, toTermSelect(packageName), ctx)
 
+        val now     = Instant.now
+        val comment = FileLevelCommentCodegen.generate(now, providerName, providerVersion)
         // TODO: document "whatever.scala" part
         val formatted = scalafmt.format(scalafmtConfPath, Paths.get("whatever.scala"), source.syntax)
 
-        os.write(outputWithPackagePath / (nameInCC + ".scala"), formatted)
+        os.write(outputWithPackagePath / (nameInCC + ".scala"), comment)
+        os.write.append(outputWithPackagePath / (nameInCC + ".scala"), formatted)
     }
   }
 

@@ -3,8 +3,6 @@ package pl.msitko.terraform4s
 import pl.msitko.terraform4s.aws.hardcoded._
 import io.circe.Printer
 
-import scala.meta.Term
-
 object ExampleMain {
 
   def main(args: Array[String]): Unit = {

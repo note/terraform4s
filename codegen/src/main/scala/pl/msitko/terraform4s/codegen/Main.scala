@@ -16,6 +16,8 @@ import scala.meta.Term
 object Main {
 
   def main(args: Array[String]): Unit = {
+    val versionsMap = Map("aws" -> "2.43.0")
+
     // inputFilePath is expected to be output of `terraform providers schema -json`
     val inputFilePath = args.headOption match {
       case Some(path) =>
@@ -46,13 +48,21 @@ object Main {
 
     println(s"$inputFile parsed as TerraformResourcesOutput")
     println(resourcesOutput.provider_schemas.head._2.resource_schemas.size)
-    val resources = resourcesOutput.provider_schemas.head._2.resource_schemas.take(5)
 
-    val packageName  = List("pl", "msitko", "example")
-    val ctx          = new DefaultCodegenContext
-    val outPath      = (os.pwd / "out").toNIO
-    val scalafmtPath = (os.pwd / ".scalafmt.conf").toNIO
-    println(Codegen.generateAndSave(resources, packageName, outPath, scalafmtPath, ctx))
+    resourcesOutput.provider_schemas.foreach {
+      case (providerName, provider) =>
+        val packageName  = List("pl", "msitko", providerName)
+        val ctx          = new DefaultCodegenContext
+        val outPath      = (os.pwd / "out").toNIO
+        val scalafmtPath = (os.pwd / ".scalafmt.conf").toNIO
+
+        val resources       = provider.resource_schemas.take(5)
+        val providerVersion = versionsMap.get(providerName)
+        val res =
+          Codegen.generateAndSave(providerName, providerVersion, resources, packageName, outPath, scalafmtPath, ctx)
+
+        println(res)
+    }
   }
 }
 

@@ -19,3 +19,6 @@ There's a problem with generating terraform JSON/HCL for the above scala code th
 lack of ability to generate `aws_route53_zone.primary.zone_id`, the `primary` part is a problem, other
 parts are easily achievable. `primary` part is a problem because 
  
+## 10 January 2020
+How can I distinguish between arguments and attributes: 
+https://discuss.hashicorp.com/t/providers-schema-how-to-distinguish-attributes-from-arguments/5029 

@@ -3,7 +3,7 @@ package pl.msitko.terraform4s.codegen
 import java.io.File
 
 import pl.msitko.terraform4s.codegen.common.UnitSpec
-import pl.msitko.terraform4s.provider.ast.ProviderSchema
+import pl.msitko.terraform4s.provider.ast.{ProviderSchema, Resource}
 import pl.msitko.terraform4s.provider.json._
 
 class ItSpec extends UnitSpec {
@@ -40,23 +40,26 @@ class ItSpec extends UnitSpec {
         "aws_acm_certificate_validation"
       )
 
-      val selectedResources = resourceSchemas.view.filterKeys(selectedResourceNames.contains(_)).toMap
+      resourcesOutput.provider_schemas.foreach {
+        case (providerName, provider) =>
+          println(s"Verifying $providerName")
+          val selectedResources = provider.resource_schemas.view.filterKeys(selectedResourceNames.contains(_)).toMap
+          val res = Codegen.generateAndSave(
+            providerName,
+            None,
+            selectedResources,
+            packageName,
+            (os.pwd / "out").toNIO,
+            (os.pwd / ".scalafmt.conf").toNIO,
+            ctx)
 
-      println(s"selected resources: ${selectedResources.size}")
+          println("res: " + res)
 
-      val res = Codegen.generateAndSave(
-        selectedResources,
-        packageName,
-        (os.pwd / "out").toNIO,
-        (os.pwd / ".scalafmt.conf").toNIO,
-        ctx)
-
-      println("res: " + res)
-
-      res.toEither match {
-        case Right(_) =>
-        case Left(e) =>
-          e.printStackTrace()
+          res.toEither match {
+            case Right(_) =>
+            case Left(e) =>
+              e.printStackTrace()
+          }
       }
 
 //      val expected = IOUtils.toString(stream, StandardCharsets.UTF_8)
