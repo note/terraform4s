@@ -1,5 +1,11 @@
 Experimental Scala DSL for writing Terraform configurations
 
+## Project status
+
+It is in initial development phase.
+
+It should be considered as an experiment or proof of concept rather than production-ready project.
+
 ## Motivation
 
 I really like the idea of Infrastructure as Code implemented in Terraform. However, writing Terraform configurations in
@@ -13,7 +19,7 @@ Having DSL is not enough though to be able to be productive in writing configura
  expressed as Scala code too. This process can be automated to some extend. Generating Scala code out of Provider's 
  Schema is the objective of `parse` and `codegen` submodules.
 
-### How is Terraform configuration generated out of Scala code
+## How is Terraform configuration generated out of Scala code
 
 The core idea is as follows:
 
@@ -21,7 +27,7 @@ You write Scala code to define your configuration. That code is compiled which b
 Then by running the result of compilation you obtain your configuration in Terraform 
 [JSON configuration syntax](https://www.terraform.io/docs/configuration/syntax-json.html).
 
-### Terraform4s providers
+## Terraform4s providers
 
 The DSL itself describes only what are the basic concepts of Terraform, e.g. `Resource`. The DSL does not contain any 
 information about concrete providers at all. They are supposed to be provided by community as Scala libraries 
