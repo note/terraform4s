@@ -2,9 +2,8 @@ package pl.msitko.terraform4s.codegen
 
 import java.time.Instant
 
-import org.scalafmt.config.ScalafmtConfig
 import org.scalafmt.{Formatted, Scalafmt}
-import pl.msitko.terraform4s.cli.Config
+import pl.msitko.terraform4s.cli.CodegenConfig
 import pl.msitko.terraform4s.codegen.classes.{AnonymousClassCodegen, InputParamsCodegen, OutClassCodegen}
 import pl.msitko.terraform4s.codegen.comments.FileLevelCommentCodegen
 import pl.msitko.terraform4s.codegen.methods.{FieldsMethods, OutMethodCodegen}
@@ -16,7 +15,7 @@ import scala.util.Try
 object Codegen {
 
   // TODO: is try a good return type?
-  def generateAndSave(config: Config): Try[Unit] = Try {
+  def generateAndSave(config: CodegenConfig, generatedAt: Instant): Try[Unit] = Try {
 
     config.providerSchemas.provider_schemas.foreach {
       case (providerName, providerSchema) =>
@@ -24,7 +23,7 @@ object Codegen {
 
         val packageName = config.packageNamePrefix :+ providerName
 
-        val outputWithPackagePath = packageName.foldLeft(os.Path(config.outPath)) { (acc, curr) =>
+        val outputWithPackagePath = packageName.foldLeft(config.outPath) { (acc, curr) =>
           acc / curr
         }
         os.makeDir.all(outputWithPackagePath)
@@ -34,11 +33,10 @@ object Codegen {
             val nameInCC = toPascalCase(k)
             val source   = generateResource(nameInCC, v, toTermSelect(packageName), ctx)
 
-            val now = Instant.now
             val comment = {
               val tfVersion       = config.versions.terraformVersion
               val providerVersion = config.versions.providersVersions.get(providerName)
-              FileLevelCommentCodegen.generate(now, tfVersion, providerName, providerVersion)
+              FileLevelCommentCodegen.generate(generatedAt, tfVersion, providerName, providerVersion)
             }
 
             val formattedCode = Scalafmt.format(source.syntax, config.scalafmtConf) match {

@@ -1,9 +1,10 @@
 package pl.msitko.terraform4s.codegen
 
 import java.io.File
+import java.time.{Instant, LocalDate, ZoneOffset}
 
 import org.scalafmt.Scalafmt
-import pl.msitko.terraform4s.cli.{Config, Versions}
+import pl.msitko.terraform4s.cli.{CodegenConfig, Versions}
 import pl.msitko.terraform4s.codegen.common.UnitSpec
 import pl.msitko.terraform4s.provider.ast.ProviderSchema
 import pl.msitko.terraform4s.provider.json._
@@ -20,8 +21,11 @@ class ItSpec extends UnitSpec {
       val versions = Versions(terraformVersion = "0.12.19", Map("aws" -> "2.43.0"))
 
       val scalafmtCfg = Scalafmt.parseHoconConfig(os.read(os.pwd / ".scalafmt.conf")).get
-      val cfg         = Config(packageName, resourcesOutput, versions, (os.pwd / "out").toNIO, scalafmtCfg)
-      val res         = Codegen.generateAndSave(cfg)
+      val cfg         = CodegenConfig(packageName, resourcesOutput, versions, (os.pwd / "out").toNIO, scalafmtCfg)
+
+      val someHardcodedInstant =
+        Instant.ofEpochSecond(LocalDate.parse("2020-01-15").atStartOfDay().toEpochSecond(ZoneOffset.ofHours(0)))
+      val res = Codegen.generateAndSave(cfg, someHardcodedInstant)
 
       println("res: " + res)
 
