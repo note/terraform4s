@@ -11,7 +11,7 @@ object PathOpt {
       if (p.isAbsolute) {
         os.Path(p)
       } else {
-        os.pwd / p.toString
+        os.pwd / os.RelPath(p.toString)
       }
     }
 }

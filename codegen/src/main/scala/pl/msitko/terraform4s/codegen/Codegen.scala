@@ -75,7 +75,7 @@ object Codegen {
         List(
           Importer(
             Term.Select(Term.Select(Term.Name("pl"), Term.Name("msitko")), Term.Name("terraform4s")),
-            List(Importee.Name(Name("Resource")))))))
+            List(Importee.Wildcard())))))
     val classDefs = anonymousClassesDefs ++ generateResourceClass(name, resource, ctx)
 
     packageName.fold(Source(imports ++ classDefs)) { pkgName =>
