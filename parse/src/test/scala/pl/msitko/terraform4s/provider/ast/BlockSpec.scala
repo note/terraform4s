@@ -8,13 +8,13 @@ class BlockSpec extends UnitSpec {
     List(
       "requiredInput0" -> attr(required = Some(true)),
       // not very realistic example, if computed is set it's always set to true
-      "requiredInput1" -> attr(required = Some(true), computed = Some(false)),
-      "optionalInput0" -> attr(optional = Some(true)),
-      "optionalInput1" -> attr(optional = Some(true), computed = Some(false)),
+      "requiredInput1"            -> attr(required = Some(true), computed = Some(false)),
+      "optionalInput0"            -> attr(optional = Some(true), computed = Some(true)),
+      "optionalNonComputedInput0" -> attr(optional = Some(true)),
+      "optionalNonComputedInput1" -> attr(optional = Some(true), computed = Some(false)),
       // not very realistic example, if optional is set it's always set to true
-      "alwaysPresentOutput0" -> attr(computed = Some(true), optional = Some(false)),
-      "alwaysPresentOutput1" -> attr(computed = Some(true)),
-      "optionalOutput0"      -> attr(computed = Some(true), optional = Some(true))
+      "nonInput0" -> attr(computed = Some(true), optional = Some(false)),
+      "nonInput1" -> attr(computed = Some(true))
     ))
 
   "requiredInputs" should {
@@ -25,19 +25,20 @@ class BlockSpec extends UnitSpec {
 
   "optionalInputs" should {
     "work" in {
-      assert(in.optionalInputs.map(_._1).toSet === Set("optionalInput0", "optionalInput1"))
+      assert(in.optionalInputs.map(_._1).toSet === Set("optionalInput0"))
     }
   }
 
-  "alwaysPresentOutputs" should {
+  "optionalNonComputedInputs" should {
     "work" in {
-      assert(in.alwaysPresentOutputs.map(_._1).toSet === Set("alwaysPresentOutput0", "alwaysPresentOutput1"))
+      assert(
+        in.optionalNonComputedInputs.map(_._1).toSet === Set("optionalNonComputedInput0", "optionalNonComputedInput1"))
     }
   }
 
-  "optionalOutputs" should {
+  "nonInput" should {
     "work" in {
-      assert(in.optionalOutputs.map(_._1).toSet === Set("optionalOutput0"))
+      assert(in.nonInputs.map(_._1).toSet === Set("nonInput0", "nonInput1"))
     }
   }
 

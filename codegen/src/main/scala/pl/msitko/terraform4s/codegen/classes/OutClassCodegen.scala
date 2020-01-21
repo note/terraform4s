@@ -13,9 +13,15 @@ object OutClassCodegen {
 
   def out(
       name: String,
-      outputs: List[(String, AttributeValue)],
-      optionalOutputs: List[(String, AttributeValue)],
+      requiredInputs: List[(String, AttributeValue)],
+      optionalInputs: List[(String, AttributeValue)],
+      optionalNonComputedInputs: List[(String, AttributeValue)],
+      nonInputs: List[(String, AttributeValue)],
+      preferOption: Boolean,
       ctx: CodegenContext): Defn.Class = {
+
+    val preferredOutFields = respectPreference(preferOption) _
+
     Defn.Class(
       List(Mod.Final(), Mod.Case()),
       Type.Name(name),
@@ -24,7 +30,12 @@ object OutClassCodegen {
         Nil,
         Name(""),
         List(
-          outFields(outputs, ctx) ++ optionalOutFields(optionalOutputs, ctx)
+          outFields(requiredInputs, ctx) ++
+            preferredOutFields(optionalInputs, ctx) ++
+            // in the below preference does not matter: https://discuss.hashicorp.com/t/providers-schema-how-to-distinguish-attributes-from-arguments/5029
+            // With much richer templating we could express optionality (or its lack) with path dependant types
+            optionalOutFields(optionalNonComputedInputs, ctx) ++
+            preferredOutFields(nonInputs, ctx)
         )),
       Template(Nil, Nil, Self(Name(""), None), Nil))
   }
@@ -32,7 +43,7 @@ object OutClassCodegen {
   private def outFields(outputs: List[(String, AttributeValue)], ctx: CodegenContext): List[Term.Param] =
     outputs.map {
       case (fieldName, attr) =>
-        val tpeSignature = TypeSignatureCodegen.fromHCLType(attr.`type`, ctx)
+        val tpeSignature = valOf(TypeSignatureCodegen.fromHCLType(attr.`type`, ctx))
         Commons.param(fieldName, tpeSignature)
     }
 
@@ -40,6 +51,16 @@ object OutClassCodegen {
     outputs.map {
       case (fieldName, attr) =>
         val tpeSignature = TypeSignatureCodegen.fromHCLType(attr.`type`, ctx)
-        Commons.param(fieldName, Type.Apply(Type.Name("Option"), List(tpeSignature)))
+        Commons.param(fieldName, valOf(Type.Apply(Type.Name("Option"), List(tpeSignature))))
+    }
+
+  private def valOf(tpe: Type): Type = Type.Apply(Type.Name("Val"), List(tpe))
+
+  private def respectPreference(
+      preferOption: Boolean)(fields: List[(String, AttributeValue)], ctx: CodegenContext): List[Term.Param] =
+    if (preferOption) {
+      optionalOutFields(fields, ctx)
+    } else {
+      outFields(fields, ctx)
     }
 }

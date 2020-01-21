@@ -17,17 +17,20 @@ final case class Block(attributes: List[(String, AttributeValue)]) {
 
   // TODO: test all 4 methods
   // https://www.terraform.io/docs/extend/schemas/schema-methods.html
-  def requiredInputs: List[(String, AttributeValue)] =
-    attributes.filter(_._2.required.getOrElse(false))
+  lazy val requiredInputs: List[(String, AttributeValue)] =
+    attributes.filter(_._2.isRequiredInput)
 
-  def optionalInputs: List[(String, AttributeValue)] =
-    attributes.filter(t => t._2.optional.getOrElse(false) && !t._2.computed.getOrElse(false))
+  lazy val optionalInputs: List[(String, AttributeValue)] =
+    attributes.filter(t => t._2.isOptionalInput)
 
-  def alwaysPresentOutputs: List[(String, AttributeValue)] =
-    attributes.filter(t => !t._2.optional.getOrElse(false) && t._2.computed.getOrElse(false))
+  // https://discuss.hashicorp.com/t/providers-schema-how-to-distinguish-attributes-from-arguments/5029
+  lazy val optionalNonComputedInputs: List[(String, AttributeValue)] =
+    attributes.filter(t => t._2.isOptionalNonComputedInput)
 
-  def optionalOutputs: List[(String, AttributeValue)] =
-    attributes.filter(t => t._2.optional.getOrElse(false) && t._2.computed.getOrElse(false))
+  // According to https://discuss.hashicorp.com/t/providers-schema-how-to-distinguish-attributes-from-arguments/5029
+  // we cannot distinguish between optional and non-optional outputs
+  lazy val nonInputs: List[(String, AttributeValue)] =
+    attributes.filter(t => t._2.isNonInput)
 
   def allObjects: List[HCLObject] =
     attributes.map(_._2.`type`.allObjects).flatten
@@ -38,7 +41,12 @@ final case class AttributeValue(
     optional: Option[Boolean],
     computed: Option[Boolean],
     required: Option[Boolean]
-)
+) {
+  def isRequiredInput: Boolean   = required.getOrElse(false)
+  def isOptionalInput: Boolean   = optional.getOrElse(false) && computed.getOrElse(false)
+  def isOptionalNonComputedInput = optional.getOrElse(false) && !computed.getOrElse(false)
+  def isNonInput                 = !isRequiredInput && !isOptionalInput && !isOptionalNonComputedInput
+}
 
 // https://www.terraform.io/docs/configuration/types.html
 sealed trait HCLType {

@@ -1,31 +1,72 @@
 package pl.msitko.terraform4s.codegen.methods
 
 import pl.msitko.terraform4s.codegen.CodegenContext
-import pl.msitko.terraform4s.provider.ast._
+import pl.msitko.terraform4s.codegen.classes.OutClassCodegen.{optionalOutFields, outFields}
+import pl.msitko.terraform4s.provider.ast.{AttributeValue, _}
 
 import scala.meta.{Defn, Lit, Mod, Term, Type}
 
 object OutMethodCodegen {
 
-  def generate(outType: String, outFields: List[(String, AttributeValue)], ctx: CodegenContext): Defn.Def = {
-    val params = outFields.map {
-      case (fieldName, attr) =>
-        Term.Apply(
-          termForType(attr.`type`, ctx),
-          List(Term.Name("schemaName"), Term.Name("resourceName"), Lit.String(fieldName)))
+  // TODO: it's very tighly connected with OutClassCodegen.out but it's not expressed on code level at all
+  def generate(
+      outType: String,
+      requiredInputs: List[(String, AttributeValue)],
+      optionalInputs: List[(String, AttributeValue)],
+      optionalNonComputedInputs: List[(String, AttributeValue)],
+      nonInputs: List[(String, AttributeValue)],
+      preferOption: Boolean,
+      ctx: CodegenContext): Defn.Def = {
+
+    val preferred = if (preferOption) {
+      termForOptionalType _
+    } else {
+      termForType _
     }
+
+    val params = termForType(requiredInputs, ctx) ++ preferred(optionalInputs, ctx) ++ termForOptionalType(
+      optionalNonComputedInputs,
+      ctx) ++ preferred(nonInputs, ctx)
 
     Defn.Def(List(Mod.Override()), Term.Name("out"), Nil, Nil, None, Term.Apply(Term.Name(outType), params))
   }
 
-  private def termForType(tpe: HCLType, ctx: CodegenContext): Term = tpe match {
-    case HCLString => Term.Name("OutStringVal")
-    case HCLNumber =>
-      Term.ApplyType(Term.Name("OutVal"), List(Type.Name("Int"))) // TODO: change to more general representation that can hold doubles
-    case HCLBool       => Term.ApplyType(Term.Name("OutVal"), List(Type.Name("Boolean")))
-    case HCLAny        => Term.ApplyType(Term.Name("OutVal"), List(Type.Name("Any")))
-    case somethingElse => Term.ApplyType(Term.Name("OutVal"), List(nestedToType(somethingElse, ctx)))
-  }
+  private def termForType(attrs: List[(String, AttributeValue)], ctx: CodegenContext): List[Term] =
+    attrs.map {
+      case (attrName, attr) =>
+        Term.Apply(
+          attr.`type` match {
+            case HCLString => Term.Name("OutStringVal")
+            case HCLNumber =>
+              outValOf(Type.Name("Int")) // TODO: change to more general representation that can hold doubles
+            case HCLBool       => outValOf(Type.Name("Boolean"))
+            case HCLAny        => outValOf(Type.Name("Any"))
+            case somethingElse => outValOf(nestedToType(somethingElse, ctx))
+          },
+          List(Term.Name("schemaName"), Term.Name("resourceName"), Lit.String(attrName))
+        )
+    }
+
+  private def termForOptionalType(attrs: List[(String, AttributeValue)], ctx: CodegenContext): List[Term] =
+    attrs.map {
+      case (attrName, attr) =>
+        Term.Apply(
+          attr.`type` match {
+            case HCLString => optionalOutValOf(Type.Name("String"))
+            case HCLNumber =>
+              optionalOutValOf(Type.Name("Int")) // TODO: change to more general representation that can hold doubles
+            case HCLBool       => optionalOutValOf(Type.Name("Boolean"))
+            case HCLAny        => optionalOutValOf(Type.Name("Any"))
+            case somethingElse => optionalOutValOf(nestedToType(somethingElse, ctx))
+          },
+          List(Term.Name("schemaName"), Term.Name("resourceName"), Lit.String(attrName))
+        )
+    }
+
+  private def outValOf(tpe: Type) = Term.ApplyType(Term.Name("OutVal"), List(tpe))
+
+  private def optionalOutValOf(tpe: Type) =
+    Term.ApplyType(Term.Name("OutVal"), List(Type.Apply(Type.Name("Option"), List(tpe))))
 
   private def nestedToType(tpe: HCLType, ctx: CodegenContext): Type = tpe match {
     case HCLString       => Type.Name("String")

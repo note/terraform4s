@@ -103,21 +103,25 @@ object Codegen {
     val outTypeName = name + "Out"
 
     val requiredParams = InputParamsCodegen.requiredParams(v.block.requiredInputs.map(t => (t._1, t._2.`type`)), ctx)
-    val optionalParams = InputParamsCodegen.optionalParams(v.block.optionalInputs.map(t => (t._1, t._2.`type`)), ctx)
+    val optionalParams =
+      InputParamsCodegen.optionalParams(v.block.optionalInputs.map(t => (t._1, t._2.`type`)), ctx) ++
+        InputParamsCodegen.optionalParams(v.block.optionalNonComputedInputs.map(t => (t._1, t._2.`type`)), ctx)
+
+    // TODO: unhardcode:
+    val preferOption = false
 
     // format: off
-    println(s"bazinga $outTypeName: ${v.block.optionalOutputs.map(_._1)}")
     List(
-      OutClassCodegen.out(outTypeName, v.block.alwaysPresentOutputs, v.block.optionalOutputs, ctx),
+      OutClassCodegen.out(outTypeName, v.block.requiredInputs, v.block.optionalInputs, v.block.optionalNonComputedInputs, v.block.nonInputs, preferOption, ctx),
       Defn.Class(List(Mod.Final(), Mod.Case()), Type.Name(name), Nil, Ctor.Primary(Nil, Name(""), List(
         requiredParams ++ optionalParams,
         List(Term.Param(List(Mod.Implicit()), Term.Name("r"), Some(Type.Name("ProvidersRoot")), None))
       )),
         Template(Nil, List(Init(Type.Apply(Type.Name("Resource"), List(Type.Name(outTypeName))), Name(""), List(List(Term.Name("r"))))), Self(Name(""), None),
           List(
-            OutMethodCodegen.generate(name + "Out", v.block.alwaysPresentOutputs, ctx),
+            OutMethodCodegen.generate(name + "Out", v.block.requiredInputs, v.block.optionalInputs, v.block.optionalNonComputedInputs, v.block.nonInputs, preferOption, ctx),
             FieldsMethods.generate(v.block.requiredInputs),
-            FieldsMethods.generateOptionalFields(v.block.optionalInputs),
+            FieldsMethods.generateOptionalFields(v.block.optionalInputs ++ v.block.optionalNonComputedInputs),
             Defn.Def(List(Mod.Override()), Term.Name("schemaName"), Nil, Nil, Some(Type.Name("String")), Lit.String(name))
           )
         )
