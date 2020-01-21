@@ -24,9 +24,6 @@ final case class ScriptConfig(
 ) extends ConfigBase {
 
   def resolve(tmpDir: os.Path): Either[String, CodegenConfig] = {
-
-    os.makeDir(tmpDir)
-
     os.write(
       tmpDir / "main.tf",
       s"""
@@ -39,23 +36,30 @@ final case class ScriptConfig(
          |}
          |""".stripMargin)
 
-    val terraformVersions = os.proc("terraform", "version").call().out.text
-    val bytes             = ByteBuffer.wrap(os.proc().call().out.bytes)
-    for {
-      versions     <- TerraformVersionParser.parse(terraformVersions)
-      schema       <- readSchema(bytes)
-      scalafmtConf <- NotResolvedConfig.readScalafmtConf(scalafmtPath)
-    } yield CodegenConfig(
-      packageNamePrefix.split('.').toList,
-      schema,
-      versions,
-      pathForNewSbtProject / "src" / "main" / "scala",
-      scalafmtConf)
+    val terraformInitRes = os.proc("terraform", "init").call(cwd = tmpDir)
+    if (terraformInitRes.exitCode == 0) {
+      val terraformVersions = os.proc("terraform", "version").call(cwd = tmpDir).out.text
+      val bytes             = ByteBuffer.wrap(os.proc("terraform providers schema -json".split(' ')).call(cwd = tmpDir).out.bytes)
+      for {
+        versions     <- TerraformVersionParser.parse(terraformVersions)
+        schema       <- readSchema(bytes)
+        scalafmtConf <- NotResolvedConfig.readScalafmtConf(scalafmtPath)
+      } yield CodegenConfig(
+        packageNamePrefix.split('.').toList,
+        schema,
+        versions,
+        pathForNewSbtProject / "src" / "main" / "scala",
+        scalafmtConf)
+    } else {
+      Left(s"terraform init exited with ${terraformInitRes.exitCode}, ${terraformInitRes.out.text}")
+    }
+
   }
 
   private def readSchema(in: ByteBuffer): Either[String, ProviderSchema] =
     for {
-      json   <- io.circe.jawn.parseByteBuffer(in).left.map(e => s"Cannot parse output of terraform cmd as JSON: $e")
+      json <- io.circe.jawn.parseByteBuffer(in).left.map(e => s"Cannot parse output of terraform cmd as JSON: $e")
+      _ = println(s"bazinga: $json")
       schema <- json.as[ProviderSchema].left.map(e => s"Cannot parse output of terraform cmd as ProviderSchema: $e")
     } yield schema
 }

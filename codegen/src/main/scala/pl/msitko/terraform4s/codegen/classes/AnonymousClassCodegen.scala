@@ -1,17 +1,7 @@
 package pl.msitko.terraform4s.codegen.classes
 
 import pl.msitko.terraform4s.codegen.CodegenContext
-import pl.msitko.terraform4s.provider.ast.{
-  HCLAny,
-  HCLBool,
-  HCLList,
-  HCLMap,
-  HCLNumber,
-  HCLObject,
-  HCLSet,
-  HCLString,
-  HCLType
-}
+import pl.msitko.terraform4s.provider.ast.HCLObject
 
 import scala.meta.{Ctor, Defn, Mod, Name, Self, Template, Term, Type}
 

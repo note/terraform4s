@@ -22,3 +22,11 @@ parts are easily achievable. `primary` part is a problem because
 ## 10 January 2020
 How can I distinguish between arguments and attributes: 
 https://discuss.hashicorp.com/t/providers-schema-how-to-distinguish-attributes-from-arguments/5029 
+
+Script invocation:
+
+```
+codegen/reStart newSbtProject --sbt-org-name pl.msitko --sbt-project-name terraform4s-provider-aws --sbt-project-version 0.1.0 --provider-name aws --provider-version 2.43.0 --sbt-project-path aws-provider --out-package-name terraform4s
+```
+
+

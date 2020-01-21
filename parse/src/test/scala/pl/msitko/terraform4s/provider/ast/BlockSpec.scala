@@ -6,11 +6,11 @@ class BlockSpec extends UnitSpec {
 
   val in = Block(
     List(
-      "requiredInput0"       -> attr(required = Some(true)),
+      "requiredInput0" -> attr(required = Some(true)),
       // not very realistic example, if computed is set it's always set to true
-      "requiredInput1"       -> attr(required = Some(true), computed = Some(false)),
-      "optionalInput0"       -> attr(optional = Some(true)),
-      "optionalInput1"       -> attr(optional = Some(true), computed = Some(false)),
+      "requiredInput1" -> attr(required = Some(true), computed = Some(false)),
+      "optionalInput0" -> attr(optional = Some(true)),
+      "optionalInput1" -> attr(optional = Some(true), computed = Some(false)),
       // not very realistic example, if optional is set it's always set to true
       "alwaysPresentOutput0" -> attr(computed = Some(true), optional = Some(false)),
       "alwaysPresentOutput1" -> attr(computed = Some(true)),

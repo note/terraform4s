@@ -43,6 +43,7 @@ object Main {
 
         makeDirIfNotExist(tmpDir)
         makeDirIfNotExist(newSbtProjectDir)
+        println("test 0")
 
         os.write(
           newSbtProjectDir / "build.sbt",

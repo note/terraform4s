@@ -16,8 +16,9 @@ object Codegen {
 
   // TODO: is try a good return type?
   def generateAndSave(config: CodegenConfig, generatedAt: Instant): Try[Unit] = Try {
+    val processedSchemas = Transformations.camelCaseAttributes(config.providerSchemas)
 
-    config.providerSchemas.provider_schemas.foreach {
+    processedSchemas.provider_schemas.foreach {
       case (providerName, providerSchema) =>
         val ctx = new DefaultCodegenContext
 
@@ -96,11 +97,7 @@ object Codegen {
     }
 
   private def toPascalCase(in: String) =
-    toCamelCase(in).capitalize
-
-  // copied from https://stackoverflow.com/a/37619752
-  private def toCamelCase(in: String) =
-    "_([a-z\\d])".r.replaceAllIn(in, _.group(1).toUpperCase)
+    Transformations.toCamelCase(in).capitalize
 
   private def generateResourceClass(name: String, v: Resource, ctx: CodegenContext): List[Defn.Class] = {
     val outTypeName = name + "Out"
