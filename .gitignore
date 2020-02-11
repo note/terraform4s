@@ -6,4 +6,4 @@ target/
 /.idea
 .terraform
 .DS_Store
-out
+/out
