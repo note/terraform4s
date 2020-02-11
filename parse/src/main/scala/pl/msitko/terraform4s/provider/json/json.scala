@@ -11,7 +11,7 @@ package object json {
   implicit lazy val hclTypeDecoder: Decoder[HCLType] = new Decoder[HCLType] {
 
     override def apply(c: HCursor): Result[HCLType] = {
-      val primitiveTypePf: String => Either[DecodingFailure, PrimitiveType] = {
+      val decodePrimitiveTypePf: String => Either[DecodingFailure, PrimitiveType] = {
         case "string" => HCLString.asRight[DecodingFailure]
         case "number" => HCLNumber.asRight[DecodingFailure]
         case "bool"   => HCLBool.asRight[DecodingFailure]
@@ -19,7 +19,7 @@ package object json {
         case _        => DecodingFailure("todo", c.history).asLeft[PrimitiveType]
       }
 
-      val nonPrimitive: String => HCursor => Either[DecodingFailure, HCLType] = {
+      val decodeNonPrimitiveType: String => HCursor => Either[DecodingFailure, HCLType] = {
         case "list" => hcursor => this.apply(hcursor).map(HCLList.apply)
         case "map"  => hcursor => this.apply(hcursor).map(HCLMap.apply)
         case "set"  => hcursor => this.apply(hcursor).map(HCLSet.apply)
@@ -42,15 +42,13 @@ package object json {
         try {
           val first  = c.downN(0).focus.get.asString.get
           val second = c.downN(1).success.get
-          nonPrimitive(first)(second)
+          decodeNonPrimitiveType(first)(second)
         } catch {
           case e: Throwable =>
-            println(c.history)
-            println(e)
             e.printStackTrace()
-            throw new RuntimeException("when: " + c.value)
+            throw new RuntimeException("Could not decode non primitive type: " + c.value)
         }
-      }(primitiveTypePf)
+      }(decodePrimitiveTypePf)
     }
   }
 

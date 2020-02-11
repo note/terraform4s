@@ -58,8 +58,7 @@ final case class ScriptConfig(
 
   private def readSchema(in: ByteBuffer): Either[String, ProviderSchema] =
     for {
-      json <- io.circe.jawn.parseByteBuffer(in).left.map(e => s"Cannot parse output of terraform cmd as JSON: $e")
-      _ = println(s"bazinga: $json")
+      json   <- io.circe.jawn.parseByteBuffer(in).left.map(e => s"Cannot parse output of terraform cmd as JSON: $e")
       schema <- json.as[ProviderSchema].left.map(e => s"Cannot parse output of terraform cmd as ProviderSchema: $e")
     } yield schema
 }
