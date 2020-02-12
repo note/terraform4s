@@ -26,14 +26,14 @@ final case class AwsDynamodbTableOut(
 final case class AwsDynamodbTable(
     hashKey: Val[String],
     name: Val[String],
-    id: Option[Val[String]],
-    streamViewType: Option[Val[String]],
-    billingMode: Option[Val[String]],
-    rangeKey: Option[Val[String]],
-    readCapacity: Option[Val[Int]],
-    streamEnabled: Option[Val[Boolean]],
-    tags: Option[Val[Map[String, String]]],
-    writeCapacity: Option[Val[Int]])(implicit r: ProvidersRoot)
+    id: Option[Val[String]] = None,
+    streamViewType: Option[Val[String]] = None,
+    billingMode: Option[Val[String]] = None,
+    rangeKey: Option[Val[String]] = None,
+    readCapacity: Option[Val[Int]] = None,
+    streamEnabled: Option[Val[Boolean]] = None,
+    tags: Option[Val[Map[String, String]]] = None,
+    writeCapacity: Option[Val[Int]] = None)(implicit r: ProvidersRoot)
     extends Resource[AwsDynamodbTableOut](r) {
 
   override def out =
@@ -63,5 +63,5 @@ final case class AwsDynamodbTable(
       streamEnabled.map(i => Field("streamEnabled", i)),
       tags.map(i => Field("tags", i)),
       writeCapacity.map(i => Field("writeCapacity", i)))
-  override def schemaName: String = "AwsDynamodbTable"
+  override def schemaName: String = "aws_dynamodb_table"
 }

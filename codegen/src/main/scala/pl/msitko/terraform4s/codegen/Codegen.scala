@@ -32,7 +32,9 @@ object Codegen {
         providerSchema.resource_schemas.map {
           case (k, v) =>
             val nameInCC = toPascalCase(k)
-            val source   = generateResource(nameInCC, v, toTermSelect(packageName), ctx)
+
+            println(s"generating: $nameInCC")
+            val source = generateResource(nameInCC, k, v, toTermSelect(packageName), ctx)
 
             val comment = {
               val tfVersion       = config.versions.terraformVersion
@@ -44,27 +46,38 @@ object Codegen {
               case Formatted.Success(formatted) =>
                 formatted
               case Formatted.Failure(e) =>
-                throw new RuntimeException(s"Formatting with scalafmt failed: $e", e)
+                System.err.println(s"Scalafmt failed for $nameInCC: $e. Continuing with unformatted file")
+                source.syntax
             }
 
             os.write(outputWithPackagePath / (nameInCC + ".scala"), comment)
             os.write.append(outputWithPackagePath / (nameInCC + ".scala"), formattedCode)
+
+            println(s"generated: $nameInCC")
         }
     }
   }
 
-  def generateResource(name: String, resource: Resource, packageName: Option[Term.Ref], ctx: CodegenContext): Source = {
+  def generateResource(
+      name: String,
+      originalResourceName: String,
+      resource: Resource,
+      packageName: Option[Term.Ref],
+      ctx: CodegenContext): Source = {
     // needed for objects, way too naive to handle e.g. nested objects
     val anonymousClasses = resource.block.allObjects
 
-    anonymousClasses.foreach { anonymousClass =>
+    val toBeRegistered = anonymousClasses.map { anonymousClass =>
       ctx.getNameOf(anonymousClass) match {
-        case None => ctx.registerAnonymousClass(ctx.getNextAnonymousClassName, anonymousClass)
-        case _    => // do nothing
+        case None =>
+          ctx.registerAnonymousClass(ctx.getNextAnonymousClassName, anonymousClass)
+          Some(anonymousClass)
+        case _ =>
+          None
       }
     }
 
-    val anonymousClassesDefs = anonymousClasses.map { obj =>
+    val anonymousClassesDefs = toBeRegistered.flatten.toSet[HCLObject].map { obj =>
       // we can call .get safely as we call registerAnonymousClass a few lines above for all anonymousClasses
       val syntheticClassName = ctx.getNameOf(obj).get
       AnonymousClassCodegen.fromHCLObject(syntheticClassName, obj, ctx)
@@ -76,7 +89,7 @@ object Codegen {
           Importer(
             Term.Select(Term.Select(Term.Name("pl"), Term.Name("msitko")), Term.Name("terraform4s")),
             List(Importee.Wildcard())))))
-    val classDefs = anonymousClassesDefs ++ generateResourceClass(name, resource, ctx)
+    val classDefs = anonymousClassesDefs ++ generateResourceClass(name, originalResourceName, resource, ctx)
 
     packageName.fold(Source(imports ++ classDefs)) { pkgName =>
       Source(List(Pkg(pkgName, imports ++ classDefs)))
@@ -99,7 +112,11 @@ object Codegen {
   private def toPascalCase(in: String) =
     Transformations.toCamelCase(in).capitalize
 
-  private def generateResourceClass(name: String, v: Resource, ctx: CodegenContext): List[Defn.Class] = {
+  private def generateResourceClass(
+      name: String,
+      originalResourceName: String,
+      v: Resource,
+      ctx: CodegenContext): List[Defn.Class] = {
     val outTypeName = name + "Out"
 
     val requiredParams = InputParamsCodegen.requiredParams(v.block.requiredInputs.map(t => (t._1, t._2.`type`)), ctx)
@@ -122,7 +139,7 @@ object Codegen {
             OutMethodCodegen.generate(name + "Out", v.block.requiredInputs, v.block.optionalInputs, v.block.optionalNonComputedInputs, v.block.nonInputs, preferOption, ctx),
             FieldsMethods.generate(v.block.requiredInputs),
             FieldsMethods.generateOptionalFields(v.block.optionalInputs ++ v.block.optionalNonComputedInputs),
-            Defn.Def(List(Mod.Override()), Term.Name("schemaName"), Nil, Nil, Some(Type.Name("String")), Lit.String(name))
+            Defn.Def(List(Mod.Override()), Term.Name("schemaName"), Nil, Nil, Some(Type.Name("String")), Lit.String(originalResourceName))
           )
         )
       )

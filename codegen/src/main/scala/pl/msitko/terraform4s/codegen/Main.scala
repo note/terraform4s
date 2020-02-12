@@ -7,12 +7,16 @@ import com.monovore.decline._
 import pl.msitko.terraform4s.cli.{ConfigBase, NotResolvedConfig, PathOpt, ScriptConfig}
 import pl.msitko.terraform4s.codegen.Codegen
 
+import scala.util.{Failure, Success}
+
 /**
   * Generates scala code out of `terraform providers schema -json`
   */
 object Main {
 
   def main(args: Array[String]): Unit = {
+    println(args.toList)
+
     val codegen =
       Opts.subcommand(
         Command(name = "codegen", header = "Generate Scala code out of terraform provider's schema")(codegenOpts))
@@ -58,8 +62,15 @@ object Main {
 
         cfg.resolve(tmpDir) match {
           case Right(resolvedConfig) =>
-            Codegen.generateAndSave(resolvedConfig, Instant.now)
-            os.remove.all(tmpDir)
+            println("generating...")
+            Codegen.generateAndSave(resolvedConfig, Instant.now) match {
+              case Success(_) =>
+                println("Finished generating")
+                os.remove.all(tmpDir)
+              case Failure(e) =>
+                e.printStackTrace()
+                println(s"Error when generating: $e")
+            }
           case Left(msg) =>
             System.err.println(msg)
             os.remove.all(tmpDir)
