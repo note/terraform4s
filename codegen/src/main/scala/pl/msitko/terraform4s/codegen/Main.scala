@@ -15,6 +15,8 @@ import scala.util.{Failure, Success}
 object Main {
 
   def main(args: Array[String]): Unit = {
+    println(args.toList)
+
     val codegen =
       Opts.subcommand(
         Command(name = "codegen", header = "Generate Scala code out of terraform provider's schema")(codegenOpts))

@@ -63,5 +63,5 @@ final case class AwsDynamodbTable(
       streamEnabled.map(i => Field("streamEnabled", i)),
       tags.map(i => Field("tags", i)),
       writeCapacity.map(i => Field("writeCapacity", i)))
-  override def schemaName: String = "AwsDynamodbTable"
+  override def schemaName: String = "aws_dynamodb_table"
 }

@@ -28,5 +28,5 @@ final case class AwsAcmCertificateValidation(
 
   override def optionalFields: List[Option[Field]] =
     List(id.map(i => Field("id", i)), validationRecordFqdns.map(i => Field("validationRecordFqdns", i)))
-  override def schemaName: String = "AwsAcmCertificateValidation"
+  override def schemaName: String = "aws_acm_certificate_validation"
 }

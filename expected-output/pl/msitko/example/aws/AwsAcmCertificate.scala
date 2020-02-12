@@ -67,5 +67,5 @@ final case class AwsAcmCertificate(
       certificateChain.map(i => Field("certificateChain", i)),
       privateKey.map(i => Field("privateKey", i)),
       tags.map(i => Field("tags", i)))
-  override def schemaName: String = "AwsAcmCertificate"
+  override def schemaName: String = "aws_acm_certificate"
 }
