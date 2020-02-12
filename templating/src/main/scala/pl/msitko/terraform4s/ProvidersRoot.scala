@@ -7,7 +7,7 @@ class ProvidersRoot {
 
   @tailrec
   private def generateUniqueResourceName(schemaName: String, n: Int = 0): String = {
-    val guess = s"${schemaName}_$n"
+    val guess = s"${schemaName}_${n.toString}"
     if (!resources.exists(_.resourceName == guess)) {
       guess
     } else {

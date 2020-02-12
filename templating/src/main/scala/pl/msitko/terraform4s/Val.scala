@@ -53,6 +53,10 @@ object Val {
     override def toTerraform: Json = Json.fromString(str)
   }
 
+  implicit def fromInt(i: Int): InVal[Int] = new InVal[Int](i) {
+    override def toTerraform: Json = Json.fromInt(i)
+  }
+
   implicit def fromBoolean(b: Boolean): InVal[Boolean] = new InVal[Boolean](b) {
     // https://www.terraform.io/docs/configuration/expressions.html#bool
     override def toTerraform: Json = Json.fromBoolean(b)

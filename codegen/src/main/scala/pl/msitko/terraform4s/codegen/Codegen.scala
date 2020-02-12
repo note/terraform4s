@@ -47,7 +47,6 @@ object Codegen {
                 formatted
               case Formatted.Failure(e) =>
                 System.err.println(s"Scalafmt failed for $nameInCC: $e. Continuing with unformatted file")
-                val failedFilePath = os.pwd / ".terraform4s-tmp" / "scalafmt-failure.scala"
                 source.syntax
             }
 
@@ -63,14 +62,17 @@ object Codegen {
     // needed for objects, way too naive to handle e.g. nested objects
     val anonymousClasses = resource.block.allObjects
 
-    anonymousClasses.foreach { anonymousClass =>
+    val toBeRegistered = anonymousClasses.map { anonymousClass =>
       ctx.getNameOf(anonymousClass) match {
-        case None => ctx.registerAnonymousClass(ctx.getNextAnonymousClassName, anonymousClass)
-        case _    => // do nothing
+        case None =>
+          ctx.registerAnonymousClass(ctx.getNextAnonymousClassName, anonymousClass)
+          Some(anonymousClass)
+        case _ =>
+          None
       }
     }
 
-    val anonymousClassesDefs = anonymousClasses.map { obj =>
+    val anonymousClassesDefs = toBeRegistered.flatten.toSet[HCLObject].map { obj =>
       // we can call .get safely as we call registerAnonymousClass a few lines above for all anonymousClasses
       val syntheticClassName = ctx.getNameOf(obj).get
       AnonymousClassCodegen.fromHCLObject(syntheticClassName, obj, ctx)

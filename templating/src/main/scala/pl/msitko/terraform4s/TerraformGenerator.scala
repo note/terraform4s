@@ -1,7 +1,6 @@
 package pl.msitko.terraform4s
 
 import io.circe.{Encoder, Json, JsonObject}
-import io.circe.generic.semiauto.deriveEncoder
 import io.circe.syntax._
 
 object TerraformGenerator {
@@ -21,12 +20,17 @@ object TerraformGenerator {
           Json.fromJsonObject(
             JsonObject.singleton(
               namedResource.resourceName,
-              Json.fromJsonObject(JsonObject.fromMap(namedResource.fields.foldLeft(Map.empty[String, Json]) {
-                (acc, curr) =>
-                  acc.+(curr.originalName -> curr.value.toTerraform)
-              }))
+              Json.fromFields(
+                jsonFromListOfFields(namedResource.fields) ++
+                  jsonFromListOfFields(namedResource.optionalFields.flatten)
+              )
             ))
         ))
   }
+
+  private def jsonFromListOfFields(fields: List[Field]): Map[String, Json] =
+    fields.foldLeft(Map.empty[String, Json]) { (acc, curr) =>
+      acc.+(curr.originalName -> curr.value.toTerraform)
+    }
 
 }
