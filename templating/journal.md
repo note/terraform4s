@@ -29,4 +29,19 @@ Script invocation:
 codegen/reStart newSbtProject --sbt-org-name pl.msitko --sbt-project-name terraform4s-provider-aws --sbt-project-version 0.1.0 --provider-name aws --provider-version 2.43.0 --sbt-project-path aws-provider --out-package-name terraform4s
 ```
 
+## 11 Feb 2020
 
+It's valid:
+
+```
+resource "aws_s3_bucket" "example_bucket" {
+  bucket = "${aws_kinesis_stream.example_stream.name}-bucket}"
+  acl    = "simplyincorrect"
+
+  tags = {
+    Environment = "test"
+  }
+}
+```
+
+Mind an incorrect `acl` value. `terraform plan` passes.
