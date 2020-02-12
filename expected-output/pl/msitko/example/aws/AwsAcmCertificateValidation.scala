@@ -15,8 +15,8 @@ final case class AwsAcmCertificateValidationOut(
 
 final case class AwsAcmCertificateValidation(
     certificateArn: Val[String],
-    id: Option[Val[String]],
-    validationRecordFqdns: Option[Val[Set[String]]])(implicit r: ProvidersRoot)
+    id: Option[Val[String]] = None,
+    validationRecordFqdns: Option[Val[Set[String]]] = None)(implicit r: ProvidersRoot)
     extends Resource[AwsAcmCertificateValidationOut](r) {
 
   override def out =

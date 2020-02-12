@@ -83,10 +83,10 @@ class InputParamsCodegenSpec extends UnitSpec {
       val res = InputParamsCodegen.optionalParams(in, defaultCtx)
 
       val expected = List(
-        param("some_string", "Option[Val[String]]"),
-        param("some_number", "Option[Val[Int]]"),
-        param("some_bool", "Option[Val[Boolean]]"),
-        param("some_any", "Option[Val[Any]]")
+        optionalParam("some_string", "Option[Val[String]]"),
+        optionalParam("some_number", "Option[Val[Int]]"),
+        optionalParam("some_bool", "Option[Val[Boolean]]"),
+        optionalParam("some_any", "Option[Val[Any]]")
       )
 
       assert(res.structure === expected.structure)
@@ -98,9 +98,9 @@ class InputParamsCodegenSpec extends UnitSpec {
       val res = InputParamsCodegen.optionalParams(in, defaultCtx)
 
       val expected = List(
-        param("some_list", "Option[Val[List[String]]]"),
-        param("some_set", "Option[Val[Set[Int]]]"),
-        param("some_map", "Option[Val[Map[String, Boolean]]]")
+        optionalParam("some_list", "Option[Val[List[String]]]"),
+        optionalParam("some_set", "Option[Val[Set[Int]]]"),
+        optionalParam("some_map", "Option[Val[Map[String, Boolean]]]")
       )
 
       assert(res.structure === expected.structure)
@@ -112,7 +112,7 @@ class InputParamsCodegenSpec extends UnitSpec {
       val res = InputParamsCodegen.optionalParams(in, defaultCtx)
 
       val expected = List(
-        param("some_nested", "Option[Val[List[Set[Map[String, String]]]]]")
+        optionalParam("some_nested", "Option[Val[List[Set[Map[String, String]]]]]")
       )
 
       assert(res.structure === expected.structure)
@@ -126,7 +126,7 @@ class InputParamsCodegenSpec extends UnitSpec {
       val res = InputParamsCodegen.optionalParams(in, defaultCtx)
 
       val expected = List(
-        param("some_object", s"Option[Val[$syntheticName]]")
+        optionalParam("some_object", s"Option[Val[$syntheticName]]")
       )
 
       assert(res.structure === expected.structure)
@@ -138,4 +138,7 @@ class InputParamsCodegenSpec extends UnitSpec {
 
   def param(termName: String, tpe: String) =
     Term.Param(Nil, Term.Name(termName), Some(toTpe(tpe)), None)
+
+  def optionalParam(termName: String, tpe: String) =
+    Term.Param(Nil, Term.Name(termName), Some(toTpe(tpe)), Some(Term.Name("None")))
 }

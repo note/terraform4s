@@ -29,15 +29,15 @@ final case class AwsAcmCertificateOut(
     validationEmails: Val[List[String]])
 
 final case class AwsAcmCertificate(
-    domainName: Option[Val[String]],
-    id: Option[Val[String]],
-    subjectAlternativeNames: Option[Val[List[String]]],
-    validationMethod: Option[Val[String]],
-    certificateAuthorityArn: Option[Val[String]],
-    certificateBody: Option[Val[String]],
-    certificateChain: Option[Val[String]],
-    privateKey: Option[Val[String]],
-    tags: Option[Val[Map[String, String]]])(implicit r: ProvidersRoot)
+    domainName: Option[Val[String]] = None,
+    id: Option[Val[String]] = None,
+    subjectAlternativeNames: Option[Val[List[String]]] = None,
+    validationMethod: Option[Val[String]] = None,
+    certificateAuthorityArn: Option[Val[String]] = None,
+    certificateBody: Option[Val[String]] = None,
+    certificateChain: Option[Val[String]] = None,
+    privateKey: Option[Val[String]] = None,
+    tags: Option[Val[Map[String, String]]] = None)(implicit r: ProvidersRoot)
     extends Resource[AwsAcmCertificateOut](r) {
 
   override def out =

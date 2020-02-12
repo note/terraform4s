@@ -32,7 +32,9 @@ object Codegen {
         providerSchema.resource_schemas.map {
           case (k, v) =>
             val nameInCC = toPascalCase(k)
-            val source   = generateResource(nameInCC, v, toTermSelect(packageName), ctx)
+
+            println(s"generating: $nameInCC")
+            val source = generateResource(nameInCC, v, toTermSelect(packageName), ctx)
 
             val comment = {
               val tfVersion       = config.versions.terraformVersion
@@ -44,11 +46,15 @@ object Codegen {
               case Formatted.Success(formatted) =>
                 formatted
               case Formatted.Failure(e) =>
-                throw new RuntimeException(s"Formatting with scalafmt failed: $e", e)
+                System.err.println(s"Scalafmt failed for $nameInCC: $e. Continuing with unformatted file")
+                val failedFilePath = os.pwd / ".terraform4s-tmp" / "scalafmt-failure.scala"
+                source.syntax
             }
 
             os.write(outputWithPackagePath / (nameInCC + ".scala"), comment)
             os.write.append(outputWithPackagePath / (nameInCC + ".scala"), formattedCode)
+
+            println(s"generated: $nameInCC")
         }
     }
   }

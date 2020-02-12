@@ -16,7 +16,8 @@ object InputParamsCodegen {
   def optionalParams(params: List[(String, HCLType)], ctx: CodegenContext): List[Term.Param] =
     params.map {
       case (fieldName, attrType) =>
-        Commons.param(fieldName, Type.Apply(Type.Name("Option"), List(toType(attrType, ctx))))
+        val tpe = Type.Apply(Type.Name("Option"), List(toType(attrType, ctx)))
+        Commons.param(fieldName, tpe, Some(Term.Name("None")))
     }
 
   private def toType(tpe: HCLType, ctx: CodegenContext): Type =
@@ -26,11 +27,11 @@ object InputParamsCodegen {
 
 object Commons {
 
-  def param(name: String, tpe: Type): Term.Param =
+  def param(name: String, tpe: Type, default: Option[Term.Name] = None): Term.Param =
     Term.Param(
       mods = Nil,
       name = Term.Name(name),
       decltpe = Some(tpe),
-      default = None
+      default = default
     )
 }
