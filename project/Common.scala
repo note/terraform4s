@@ -1,4 +1,5 @@
-import com.softwaremill.SbtSoftwareMill.autoImport.{commonSmlBuildSettings, ossPublishSettings, wartRemoverSettings}
+import com.softwaremill.SbtSoftwareMillCommon.commonSmlBuildSettings
+import com.softwaremill.Publish.ossPublishSettings
 import org.scalafmt.sbt.ScalafmtPlugin.autoImport.scalafmtOnCompile
 import sbt.Keys.{name, organization, scalaVersion, version}
 import sbt.Project
@@ -12,11 +13,10 @@ object Common {
       organization := "pl.msitko",
       version := versionArg,
 
-      scalaVersion := "2.13.1",
+      scalaVersion := "2.13.10",
       scalafmtOnCompile := true,
 
       commonSmlBuildSettings,
-      wartRemoverSettings,
       ossPublishSettings
     )
   }
