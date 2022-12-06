@@ -8,16 +8,14 @@ import scala.meta.{Term, Type}
 object InputParamsCodegen {
 
   def requiredParams(params: List[(String, HCLType)], ctx: CodegenContext): List[Term.Param] =
-    params.map {
-      case (fieldName, attrType) =>
-        Commons.param(fieldName, toType(attrType, ctx))
+    params.map { case (fieldName, attrType) =>
+      Commons.param(fieldName, toType(attrType, ctx))
     }
 
   def optionalParams(params: List[(String, HCLType)], ctx: CodegenContext): List[Term.Param] =
-    params.map {
-      case (fieldName, attrType) =>
-        val tpe = Type.Apply(Type.Name("Option"), List(toType(attrType, ctx)))
-        Commons.param(fieldName, tpe, Some(Term.Name("None")))
+    params.map { case (fieldName, attrType) =>
+      val tpe = Type.Apply(Type.Name("Option"), List(toType(attrType, ctx)))
+      Commons.param(fieldName, tpe, Some(Term.Name("None")))
     }
 
   private def toType(tpe: HCLType, ctx: CodegenContext): Type =

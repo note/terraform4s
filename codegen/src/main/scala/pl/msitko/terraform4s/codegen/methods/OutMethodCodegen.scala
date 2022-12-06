@@ -32,35 +32,33 @@ object OutMethodCodegen {
   }
 
   private def termForType(attrs: List[(String, AttributeValue)], ctx: CodegenContext): List[Term] =
-    attrs.map {
-      case (attrName, attr) =>
-        Term.Apply(
-          attr.`type` match {
-            case HCLString => Term.Name("OutStringVal")
-            case HCLNumber =>
-              outValOf(Type.Name("Int")) // TODO: change to more general representation that can hold doubles
-            case HCLBool       => outValOf(Type.Name("Boolean"))
-            case HCLAny        => outValOf(Type.Name("Any"))
-            case somethingElse => outValOf(nestedToType(somethingElse, ctx))
-          },
-          List(Term.Name("schemaName"), Term.Name("resourceName"), Lit.String(attrName))
-        )
+    attrs.map { case (attrName, attr) =>
+      Term.Apply(
+        attr.`type` match {
+          case HCLString => Term.Name("OutStringVal")
+          case HCLNumber =>
+            outValOf(Type.Name("Int")) // TODO: change to more general representation that can hold doubles
+          case HCLBool       => outValOf(Type.Name("Boolean"))
+          case HCLAny        => outValOf(Type.Name("Any"))
+          case somethingElse => outValOf(nestedToType(somethingElse, ctx))
+        },
+        List(Term.Name("schemaName"), Term.Name("resourceName"), Lit.String(attrName))
+      )
     }
 
   private def termForOptionalType(attrs: List[(String, AttributeValue)], ctx: CodegenContext): List[Term] =
-    attrs.map {
-      case (attrName, attr) =>
-        Term.Apply(
-          attr.`type` match {
-            case HCLString => optionalOutValOf(Type.Name("String"))
-            case HCLNumber =>
-              optionalOutValOf(Type.Name("Int")) // TODO: change to more general representation that can hold doubles
-            case HCLBool       => optionalOutValOf(Type.Name("Boolean"))
-            case HCLAny        => optionalOutValOf(Type.Name("Any"))
-            case somethingElse => optionalOutValOf(nestedToType(somethingElse, ctx))
-          },
-          List(Term.Name("schemaName"), Term.Name("resourceName"), Lit.String(attrName))
-        )
+    attrs.map { case (attrName, attr) =>
+      Term.Apply(
+        attr.`type` match {
+          case HCLString => optionalOutValOf(Type.Name("String"))
+          case HCLNumber =>
+            optionalOutValOf(Type.Name("Int")) // TODO: change to more general representation that can hold doubles
+          case HCLBool       => optionalOutValOf(Type.Name("Boolean"))
+          case HCLAny        => optionalOutValOf(Type.Name("Any"))
+          case somethingElse => optionalOutValOf(nestedToType(somethingElse, ctx))
+        },
+        List(Term.Name("schemaName"), Term.Name("resourceName"), Lit.String(attrName))
+      )
     }
 
   private def outValOf(tpe: Type) = Term.ApplyType(Term.Name("OutVal"), List(tpe))

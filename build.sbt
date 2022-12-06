@@ -5,10 +5,10 @@ lazy val parse = (project in file("parse"))
   .commonSettings("terraform4s-parse", "0.1.0")
   .settings(
     libraryDependencies ++= Seq(
-      "io.circe" %% "circe-parser" % "0.12.3",
-      "io.circe" %% "circe-generic" % "0.12.3",
-      "org.scalatest" %% "scalatest" % "3.0.8" % Test,
-      "commons-io" % "commons-io" % "2.6" % Test
+      "io.circe"      %% "circe-parser"   % "0.12.3",
+      "io.circe"      %% "circe-generic"  % "0.12.3",
+      "org.scalatest" %% "scalatest"      % "3.0.8" % Test,
+      "commons-io"    % "commons-io"      % "2.6" % Test
     )
   )
 
@@ -17,17 +17,17 @@ lazy val codegen = (project in file("codegen"))
   .settings(
     libraryDependencies ++= Seq(
       "software.amazon.awssdk" % "sdk-core" % "2.9.26", // TODO: is it needed?
-      "com.beachape" %% "enumeratum" % "1.5.13",
-      "com.lihaoyi" %% "os-lib" % "0.6.2",
-      "org.scalameta" %% "scalameta" % "4.3.0",
+      "com.beachape"  %% "enumeratum"       % "1.5.13",
+      "com.lihaoyi"   %% "os-lib"           % "0.6.2",
+      "org.scalameta" %% "scalameta"        % "4.6.0",
       // why not "org.scalameta" %% "scalafmt-dynamic" % "2.3.2"?
       // Because scalafmt-core has API in which configuration can be passed as ScalafmtConfig instead
       // of Path. And we want to provide default configuration in case user has not provided custom configuration
       // in a file
-      "org.scalameta" %% "scalafmt-core" % "2.3.2",
-      "com.monovore" %% "decline" % "1.0.0",
-      "org.scalatest" %% "scalatest" % "3.0.8" % Test,
-      "commons-io" % "commons-io" % "2.6" % Test
+      "org.scalameta" %% "scalafmt-core"    % "3.6.1",
+      "com.monovore"  %% "decline"          % "1.0.0",
+      "org.scalatest" %% "scalatest"        % "3.0.8" % Test,
+      "commons-io"    % "commons-io"        % "2.6" % Test
     )
 )
   .dependsOn(parse)
@@ -39,8 +39,8 @@ lazy val templating = (project in file("templating"))
   .commonSettings("terraform4s-templating", "0.1.0")
   .settings(
     libraryDependencies ++= Seq(
-      "io.circe" %% "circe-generic" % "0.12.3",
-      "com.lihaoyi" %% "sourcecode" % "0.1.8",
-      "org.scalameta" %% "scalameta" % "4.3.0" // remove it, useful only for prototyping
+      "io.circe"      %% "circe-generic" % "0.12.3",
+      "com.lihaoyi"   %% "sourcecode"    % "0.1.8",
+      "org.scalameta" %% "scalameta"     % "4.3.0" // remove it, useful only for prototyping
     )
   )

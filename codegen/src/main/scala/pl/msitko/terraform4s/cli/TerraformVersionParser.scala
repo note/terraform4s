@@ -7,8 +7,7 @@ object TerraformVersionParser {
   val terraformVersionRegex = "Terraform v(([0-9]|\\.)+)".r
   val providerRegex         = "\\+ provider\\.((\\S)*) v(([0-9]|\\.)+)".r
 
-  /**
-    * It parses the output of the command `terraform version`
+  /** It parses the output of the command `terraform version`
     */
   def parse(input: String): Either[String, Versions] =
     (for {

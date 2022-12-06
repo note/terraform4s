@@ -18,43 +18,41 @@ object Codegen {
   def generateAndSave(config: CodegenConfig, generatedAt: Instant): Try[Unit] = Try {
     val processedSchemas = Transformations.camelCaseAttributes(config.providerSchemas)
 
-    processedSchemas.provider_schemas.foreach {
-      case (providerName, providerSchema) =>
-        val ctx = new DefaultCodegenContext
+    processedSchemas.provider_schemas.foreach { case (providerName, providerSchema) =>
+      val ctx = new DefaultCodegenContext
 
-        val packageName = config.packageNamePrefix :+ providerName
+      val packageName = config.packageNamePrefix :+ providerName
 
-        val outputWithPackagePath = packageName.foldLeft(config.outPath) { (acc, curr) =>
-          acc / curr
+      val outputWithPackagePath = packageName.foldLeft(config.outPath) { (acc, curr) =>
+        acc / curr
+      }
+      os.makeDir.all(outputWithPackagePath)
+
+      providerSchema.resource_schemas.map { case (k, v) =>
+        val nameInCC = toPascalCase(k)
+
+        println(s"generating: $nameInCC")
+        val source = generateResource(nameInCC, k, v, toTermSelect(packageName), ctx)
+
+        val comment = {
+          val tfVersion       = config.versions.terraformVersion
+          val providerVersion = config.versions.providersVersions.get(providerName)
+          FileLevelCommentCodegen.generate(generatedAt, tfVersion, providerName, providerVersion)
         }
-        os.makeDir.all(outputWithPackagePath)
 
-        providerSchema.resource_schemas.map {
-          case (k, v) =>
-            val nameInCC = toPascalCase(k)
-
-            println(s"generating: $nameInCC")
-            val source = generateResource(nameInCC, k, v, toTermSelect(packageName), ctx)
-
-            val comment = {
-              val tfVersion       = config.versions.terraformVersion
-              val providerVersion = config.versions.providersVersions.get(providerName)
-              FileLevelCommentCodegen.generate(generatedAt, tfVersion, providerName, providerVersion)
-            }
-
-            val formattedCode = Scalafmt.format(source.syntax, config.scalafmtConf) match {
-              case Formatted.Success(formatted) =>
-                formatted
-              case Formatted.Failure(e) =>
-                System.err.println(s"Scalafmt failed for $nameInCC: $e. Continuing with unformatted file")
-                source.syntax
-            }
-
-            os.write(outputWithPackagePath / (nameInCC + ".scala"), comment)
-            os.write.append(outputWithPackagePath / (nameInCC + ".scala"), formattedCode)
-
-            println(s"generated: $nameInCC")
+        val formattedCode = Scalafmt.format(source.syntax, config.scalafmtConf) match {
+          case Formatted.Success(formatted) =>
+            formatted
+          case Formatted.Failure(e) =>
+            System.err.println(s"Scalafmt failed for $nameInCC: $e. Continuing with unformatted file")
+            source.syntax
         }
+
+        os.write(outputWithPackagePath / (nameInCC + ".scala"), comment)
+        os.write.append(outputWithPackagePath / (nameInCC + ".scala"), formattedCode)
+
+        println(s"generated: $nameInCC")
+      }
     }
   }
 

@@ -9,8 +9,7 @@ import pl.msitko.terraform4s.codegen.Codegen
 
 import scala.util.{Failure, Success}
 
-/**
-  * Generates scala code out of `terraform providers schema -json`
+/** Generates scala code out of `terraform providers schema -json`
   */
 object Main {
 

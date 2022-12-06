@@ -8,13 +8,12 @@ import scala.meta.{Ctor, Defn, Mod, Name, Self, Template, Term, Type}
 object AnonymousClassCodegen {
 
   def fromHCLObject(name: String, obj: HCLObject, ctx: CodegenContext): Defn.Class = {
-    val params: List[Term.Param] = obj.attributes.map {
-      case (k, v) =>
-        Term.Param(
-          mods = Nil,
-          name = Term.Name(k),
-          decltpe = Some(TypeSignatureCodegen.fromHCLType(v, ctx)),
-          default = None)
+    val params: List[Term.Param] = obj.attributes.map { case (k, v) =>
+      Term.Param(
+        mods = Nil,
+        name = Term.Name(k),
+        decltpe = Some(TypeSignatureCodegen.fromHCLType(v, ctx)),
+        default = None)
     }
 
     caseClass(name, params)

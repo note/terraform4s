@@ -7,9 +7,8 @@ import scala.meta.{Defn, Lit, Mod, Term, Type}
 object FieldsMethods {
 
   def generate(requiredFields: List[(String, AttributeValue)]): Defn.Def = {
-    val fields = requiredFields.map {
-      case (fieldName, _) =>
-        Term.Apply(Term.Name("Field"), List(Lit.String(fieldName), Term.Name(fieldName)))
+    val fields = requiredFields.map { case (fieldName, _) =>
+      Term.Apply(Term.Name("Field"), List(Lit.String(fieldName), Term.Name(fieldName)))
     }
 
     overridenMethod(
@@ -20,14 +19,13 @@ object FieldsMethods {
   }
 
   def generateOptionalFields(optionalFields: List[(String, AttributeValue)]): Defn.Def = {
-    val fields = optionalFields.map {
-      case (fieldName, attr) =>
-        Term.Apply(
-          Term.Select(Term.Name(fieldName), Term.Name("map")),
-          List(
-            Term.Function(
-              List(Term.Param(Nil, Term.Name("i"), None, None)),
-              Term.Apply(Term.Name("Field"), List(Lit.String(fieldName), Term.Name("i"))))))
+    val fields = optionalFields.map { case (fieldName, attr) =>
+      Term.Apply(
+        Term.Select(Term.Name(fieldName), Term.Name("map")),
+        List(
+          Term.Function(
+            List(Term.Param(Nil, Term.Name("i"), None, None)),
+            Term.Apply(Term.Name("Field"), List(Lit.String(fieldName), Term.Name("i"))))))
     }
 
     overridenMethod(

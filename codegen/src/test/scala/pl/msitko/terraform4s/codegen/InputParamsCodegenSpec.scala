@@ -69,7 +69,7 @@ class InputParamsCodegenSpec extends UnitSpec {
       val res = InputParamsCodegen.requiredParams(in, defaultCtx)
 
       val expected = List(
-        param("some_object", (s"Val[$syntheticName]"))
+        param("some_object", s"Val[$syntheticName]")
       )
 
       assert(res.structure === expected.structure)
