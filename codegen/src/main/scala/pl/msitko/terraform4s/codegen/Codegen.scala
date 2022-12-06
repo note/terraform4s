@@ -17,13 +17,14 @@ object Codegen {
   // TODO: is try a good return type?
   def generateAndSave(config: CodegenConfig, generatedAt: Instant): Try[Unit] = Try {
     println("Generating Scala code...")
-    println(s"bazinga $config")
     val processedSchemas = Transformations.camelCaseAttributes(config.providerSchemas)
 
     processedSchemas.provider_schemas.foreach { case (providerName, providerSchema) =>
       // TODO: Is it ok to lose info about registry.terraform.io?
-      // For registry.terraform.io/hashicorp/aws, normalizedProviderName = "hashicorp.aws"
-      val normalizedProviderName = providerName.split(Pattern.quote("/")).drop(1).mkString(".")
+      // For registry.terraform.io/hashicorp/aws, normalizedProviderName = "hashicorpaws"
+      // Originally I was trying to use "hashicorp.aws" as normalized name, but then it appeared like this in the generated code:
+      // package terraform4s.`hashicorp.aws`
+      val normalizedProviderName = providerName.split(Pattern.quote("/")).drop(1).mkString
 
       val ctx = new DefaultCodegenContext
 

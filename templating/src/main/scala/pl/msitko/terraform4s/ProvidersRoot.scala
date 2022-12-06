@@ -21,7 +21,7 @@ class ProvidersRoot {
     resourceName
   }
 
-  def getJson = TerraformGenerator.encode(resources)
+  def getJson = Generator.encode(resources)
 }
 
 object ProvidersRoot {

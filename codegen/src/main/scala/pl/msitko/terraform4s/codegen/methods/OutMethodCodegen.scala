@@ -28,7 +28,13 @@ object OutMethodCodegen {
       optionalNonComputedInputs,
       ctx) ++ preferred(nonInputs, ctx)
 
-    Defn.Def(List(Mod.Override()), Term.Name("out"), Nil, Nil, None, Term.Apply(Term.Name(outType), params))
+    Defn.Def(
+      List(Mod.Override()),
+      Term.Name("out"),
+      Nil,
+      Nil,
+      Some(Type.Name(outType)),
+      Term.Apply(Term.Name(outType), params))
   }
 
   private def termForType(attrs: List[(String, AttributeValue)], ctx: CodegenContext): List[Term] =

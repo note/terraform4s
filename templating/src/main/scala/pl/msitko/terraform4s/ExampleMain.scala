@@ -6,15 +6,14 @@ import io.circe.Printer
 object ExampleMain {
 
   def main(args: Array[String]): Unit = {
-
-    import ProvidersRoot.Default
-    val dynamo  = DynamoResource("something", false)
-    val dynamo2 = DynamoResource("somethingElse", false)
+    implicit val root = ProvidersRoot.Default
+    val dynamo        = DynamoResource("something", false)
+    val dynamo2       = DynamoResource("somethingElse", false)
 
     KinesisResource(dynamo.out.output1.append("-stream"), dynamo2.out.output2)
     S3Bucket("terraform4s-test", "private")
 
-    println(ProvidersRoot.Default.getJson.printWith(Printer.spaces2))
+    println(root.getJson.printWith(Printer.spaces2))
   }
 }
 
