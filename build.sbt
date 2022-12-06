@@ -5,8 +5,8 @@ lazy val parse = (project in file("parse"))
   .commonSettings("terraform4s-parse", "0.1.0")
   .settings(
     libraryDependencies ++= Seq(
-      "io.circe"      %% "circe-parser"   % "0.12.3",
-      "io.circe"      %% "circe-generic"  % "0.12.3",
+      "io.circe"      %% "circe-parser"   % "0.14.3",
+      "io.circe"      %% "circe-generic"  % "0.14.3",
       "org.scalatest" %% "scalatest"      % "3.0.8" % Test,
       "commons-io"    % "commons-io"      % "2.6" % Test
     )
@@ -25,9 +25,9 @@ lazy val codegen = (project in file("codegen"))
       // of Path. And we want to provide default configuration in case user has not provided custom configuration
       // in a file
       "org.scalameta" %% "scalafmt-core"    % "3.6.1",
-      "com.monovore"  %% "decline"          % "1.0.0",
-      "org.scalatest" %% "scalatest"        % "3.0.8" % Test,
-      "commons-io"    % "commons-io"        % "2.6" % Test
+      "com.monovore"  %% "decline"          % "1.4.0",
+      "org.scalatest" %% "scalatest"        % "3.2.11" % Test,
+      "commons-io"    % "commons-io"        % "2.11.0" % Test
     )
 )
   .dependsOn(parse)
@@ -39,7 +39,7 @@ lazy val templating = (project in file("templating"))
   .commonSettings("terraform4s-templating", "0.1.0")
   .settings(
     libraryDependencies ++= Seq(
-      "io.circe"      %% "circe-generic" % "0.12.3",
+      "io.circe"      %% "circe-generic" % "0.14.3",
       "com.lihaoyi"   %% "sourcecode"    % "0.1.8",
       "org.scalameta" %% "scalameta"     % "4.3.0" // remove it, useful only for prototyping
     )
