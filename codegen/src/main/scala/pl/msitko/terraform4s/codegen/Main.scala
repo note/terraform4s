@@ -50,7 +50,7 @@ object Main {
         os.write(
           newSbtProjectDir / "build.sbt",
           s"""
-             |scalaVersion := "2.13.1"
+             |scalaVersion := "2.13.10"
              |
              |organization := "${cfg.sbtOrgName}"
              |name         := "${cfg.sbtProjectName}"
@@ -61,14 +61,13 @@ object Main {
 
         cfg.resolve(tmpDir) match {
           case Right(resolvedConfig) =>
-            println("generating...")
             Codegen.generateAndSave(resolvedConfig, Instant.now) match {
               case Success(_) =>
-                println("Finished generating")
+                println("Finished generating Scala code")
                 os.remove.all(tmpDir)
               case Failure(e) =>
                 e.printStackTrace()
-                println(s"Error when generating: $e")
+                println(s"Error when generating Scala code: $e")
             }
           case Left(msg) =>
             System.err.println(msg)

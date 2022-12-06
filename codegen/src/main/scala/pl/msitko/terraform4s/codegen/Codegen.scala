@@ -1,7 +1,6 @@
 package pl.msitko.terraform4s.codegen
 
 import java.time.Instant
-
 import org.scalafmt.{Formatted, Scalafmt}
 import pl.msitko.terraform4s.cli.CodegenConfig
 import pl.msitko.terraform4s.codegen.classes.{AnonymousClassCodegen, InputParamsCodegen, OutClassCodegen}
@@ -9,6 +8,7 @@ import pl.msitko.terraform4s.codegen.comments.FileLevelCommentCodegen
 import pl.msitko.terraform4s.codegen.methods.{FieldsMethods, OutMethodCodegen}
 import pl.msitko.terraform4s.provider.ast._
 
+import java.util.regex.Pattern
 import scala.meta._
 import scala.util.Try
 
@@ -16,12 +16,18 @@ object Codegen {
 
   // TODO: is try a good return type?
   def generateAndSave(config: CodegenConfig, generatedAt: Instant): Try[Unit] = Try {
+    println("Generating Scala code...")
+    println(s"bazinga $config")
     val processedSchemas = Transformations.camelCaseAttributes(config.providerSchemas)
 
     processedSchemas.provider_schemas.foreach { case (providerName, providerSchema) =>
+      // TODO: Is it ok to lose info about registry.terraform.io?
+      // For registry.terraform.io/hashicorp/aws, normalizedProviderName = "hashicorp.aws"
+      val normalizedProviderName = providerName.split(Pattern.quote("/")).drop(1).mkString(".")
+
       val ctx = new DefaultCodegenContext
 
-      val packageName = config.packageNamePrefix :+ providerName
+      val packageName = config.packageNamePrefix :+ normalizedProviderName
 
       val outputWithPackagePath = packageName.foldLeft(config.outPath) { (acc, curr) =>
         acc / curr

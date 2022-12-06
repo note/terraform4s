@@ -1,11 +1,11 @@
 terraform {
-  required_version = ">= 0.12.0"
+  required_version = ">= 1.0.11"
 }
 
 provider "aws" {
   profile = var.aws_profile_name
   region = "eu-central-1"
-  version = "~> 2.43.0"
+  version = "~> 4.3.0"
 }
 
 resource "aws_kinesis_stream" "example_stream" {
@@ -25,9 +25,13 @@ resource "aws_kinesis_stream" "example_stream" {
 
 resource "aws_s3_bucket" "example_bucket" {
   bucket = "${aws_kinesis_stream.example_stream.name}-bucket"
-  acl    = "private"
 
   tags = {
     Environment = "test"
   }
+}
+
+resource "aws_s3_bucket_acl" "example_bucket_acl" {
+  bucket = aws_s3_bucket.example_bucket.id
+  acl    = "private"
 }
