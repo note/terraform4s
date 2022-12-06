@@ -16,12 +16,12 @@ class ProvidersRoot {
   }
 
   def add(r: Resource[_]): String = {
-    val resourceName = generateUniqueResourceName(r.schemaName)
+    val resourceName = generateUniqueResourceName(r.__schemaName)
     resources = resources.prepended(r)
     resourceName
   }
 
-  def getJson = TerraformGenerator.encode(resources)
+  def getJson = Generator.encode(resources)
 }
 
 object ProvidersRoot {

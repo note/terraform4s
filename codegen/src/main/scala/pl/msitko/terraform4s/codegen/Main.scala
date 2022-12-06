@@ -41,16 +41,16 @@ object Main {
         }
       case Right(cfg: ScriptConfig) =>
         println("parsed: script")
-        val tmpDir           = os.pwd / ".terraform4s-tmp"
+        val tmpDir           = os.temp.dir()
         val newSbtProjectDir = cfg.pathForNewSbtProject
 
-        makeDirIfNotExist(tmpDir)
         makeDirIfNotExist(newSbtProjectDir)
+        makeDirIfNotExist(newSbtProjectDir / "project")
 
         os.write(
           newSbtProjectDir / "build.sbt",
           s"""
-             |scalaVersion := "2.13.1"
+             |scalaVersion := "2.13.10"
              |
              |organization := "${cfg.sbtOrgName}"
              |name         := "${cfg.sbtProjectName}"
@@ -59,16 +59,20 @@ object Main {
              |libraryDependencies += "pl.msitko" %% "terraform4s-templating" % "0.1.0"
              |""".stripMargin)
 
-        cfg.resolve(tmpDir) match {
+        os.write(
+          newSbtProjectDir / "project" / "build.properties",
+          s"""sbt.version=1.8.0
+             |""".stripMargin)
+
+        cfg.terraformInitInDir(tmpDir) match {
           case Right(resolvedConfig) =>
-            println("generating...")
             Codegen.generateAndSave(resolvedConfig, Instant.now) match {
               case Success(_) =>
-                println("Finished generating")
+                println("Finished generating Scala code")
                 os.remove.all(tmpDir)
               case Failure(e) =>
                 e.printStackTrace()
-                println(s"Error when generating: $e")
+                println(s"Error when generating Scala code: $e")
             }
           case Left(msg) =>
             System.err.println(msg)
