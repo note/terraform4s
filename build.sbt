@@ -7,8 +7,8 @@ lazy val parse = (project in file("parse"))
     libraryDependencies ++= Seq(
       "io.circe"      %% "circe-parser"   % "0.14.3",
       "io.circe"      %% "circe-generic"  % "0.14.3",
-      "org.scalatest" %% "scalatest"      % "3.0.8" % Test,
-      "commons-io"    % "commons-io"      % "2.6" % Test
+      "org.scalatest" %% "scalatest"      % "3.2.11" % Test,
+      "commons-io"    % "commons-io"      % "2.11.0" % Test
     )
   )
 
@@ -17,8 +17,8 @@ lazy val codegen = (project in file("codegen"))
   .settings(
     libraryDependencies ++= Seq(
       "software.amazon.awssdk" % "sdk-core" % "2.9.26", // TODO: is it needed?
-      "com.beachape"  %% "enumeratum"       % "1.5.13",
-      "com.lihaoyi"   %% "os-lib"           % "0.6.2",
+      "com.beachape"  %% "enumeratum"       % "1.7.0",
+      "com.lihaoyi"   %% "os-lib"           % "0.8.1",
       "org.scalameta" %% "scalameta"        % "4.6.0",
       // why not "org.scalameta" %% "scalafmt-dynamic" % "2.3.2"?
       // Because scalafmt-core has API in which configuration can be passed as ScalafmtConfig instead
@@ -40,7 +40,7 @@ lazy val templating = (project in file("templating"))
   .settings(
     libraryDependencies ++= Seq(
       "io.circe"      %% "circe-generic" % "0.14.3",
-      "com.lihaoyi"   %% "sourcecode"    % "0.1.8",
+      "com.lihaoyi"   %% "sourcecode"    % "0.3.0",
       "org.scalameta" %% "scalameta"     % "4.3.0" // remove it, useful only for prototyping
     )
   )
