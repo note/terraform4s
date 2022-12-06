@@ -42,7 +42,7 @@ object OutMethodCodegen {
           case HCLAny        => outValOf(Type.Name("Any"))
           case somethingElse => outValOf(nestedToType(somethingElse, ctx))
         },
-        List(Term.Name("schemaName"), Term.Name("resourceName"), Lit.String(attrName))
+        List(Term.Name("__schemaName"), Term.Name("resourceName"), Lit.String(attrName))
       )
     }
 
@@ -57,7 +57,7 @@ object OutMethodCodegen {
           case HCLAny        => optionalOutValOf(Type.Name("Any"))
           case somethingElse => optionalOutValOf(nestedToType(somethingElse, ctx))
         },
-        List(Term.Name("schemaName"), Term.Name("resourceName"), Lit.String(attrName))
+        List(Term.Name("__schemaName"), Term.Name("resourceName"), Lit.String(attrName))
       )
     }
 

@@ -143,7 +143,7 @@ object Codegen {
             OutMethodCodegen.generate(name + "Out", v.block.requiredInputs, v.block.optionalInputs, v.block.optionalNonComputedInputs, v.block.nonInputs, preferOption, ctx),
             FieldsMethods.generate(v.block.requiredInputs),
             FieldsMethods.generateOptionalFields(v.block.optionalInputs ++ v.block.optionalNonComputedInputs),
-            Defn.Def(List(Mod.Override()), Term.Name("schemaName"), Nil, Nil, Some(Type.Name("String")), Lit.String(originalResourceName))
+            Defn.Def(List(Mod.Override()), Term.Name("__schemaName"), Nil, Nil, Some(Type.Name("String")), Lit.String(originalResourceName))
           )
         )
       )

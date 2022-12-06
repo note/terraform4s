@@ -12,7 +12,7 @@ object FieldsMethods {
     }
 
     overridenMethod(
-      methodName = "fields",
+      methodName = "__fields",
       tpe = Type.Apply(Type.Name("List"), List(Type.Name("Field"))),
       term = Term.Apply(Term.Name("List"), fields)
     )
@@ -29,7 +29,7 @@ object FieldsMethods {
     }
 
     overridenMethod(
-      methodName = "optionalFields",
+      methodName = "__optionalFields",
       tpe = Type.Apply(Type.Name("List"), List(Type.Apply(Type.Name("Option"), List(Type.Name("Field"))))),
       term = Term.Apply(Term.Name("List"), fields)
     )
