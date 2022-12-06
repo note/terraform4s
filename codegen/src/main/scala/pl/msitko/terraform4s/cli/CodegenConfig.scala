@@ -23,7 +23,7 @@ final case class ScriptConfig(
     scalafmtPath: Option[os.Path]
 ) extends ConfigBase {
 
-  def resolve(tmpDir: os.Path): Either[String, CodegenConfig] = {
+  def terraformInitInDir(tmpDir: os.Path): Either[String, CodegenConfig] = {
     os.write(
       tmpDir / "main.tf",
       s"""

@@ -41,11 +41,11 @@ object Main {
         }
       case Right(cfg: ScriptConfig) =>
         println("parsed: script")
-        val tmpDir           = os.pwd / ".terraform4s-tmp"
+        val tmpDir           = os.temp.dir()
         val newSbtProjectDir = cfg.pathForNewSbtProject
 
-        makeDirIfNotExist(tmpDir)
         makeDirIfNotExist(newSbtProjectDir)
+        makeDirIfNotExist(newSbtProjectDir / "project")
 
         os.write(
           newSbtProjectDir / "build.sbt",
@@ -59,7 +59,12 @@ object Main {
              |libraryDependencies += "pl.msitko" %% "terraform4s-templating" % "0.1.0"
              |""".stripMargin)
 
-        cfg.resolve(tmpDir) match {
+        os.write(
+          newSbtProjectDir / "project" / "build.properties",
+          s"""sbt.version=1.8.0
+             |""".stripMargin)
+
+        cfg.terraformInitInDir(tmpDir) match {
           case Right(resolvedConfig) =>
             Codegen.generateAndSave(resolvedConfig, Instant.now) match {
               case Success(_) =>

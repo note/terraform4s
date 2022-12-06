@@ -16,13 +16,13 @@ object TerraformGenerator {
     override def apply(namedResource: Resource[_]): Json =
       Json.fromJsonObject(
         JsonObject.singleton(
-          namedResource.schemaName,
+          namedResource.__schemaName,
           Json.fromJsonObject(
             JsonObject.singleton(
               namedResource.resourceName,
               Json.fromFields(
-                jsonFromListOfFields(namedResource.fields) ++
-                  jsonFromListOfFields(namedResource.optionalFields.flatten)
+                jsonFromListOfFields(namedResource.__fields) ++
+                  jsonFromListOfFields(namedResource.__optionalFields.flatten)
               )
             ))
         ))

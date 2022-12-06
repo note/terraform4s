@@ -16,10 +16,10 @@ final case class AwsKinesisStream(
     extends Resource[AwsKinesisStreamOut](r) {
 
   override def out =
-    AwsKinesisStreamOut(OutStringVal(schemaName, resourceName, "arn"), OutStringVal(schemaName, resourceName, "id"))
-  override def fields: List[Field] = List(Field("name", name), Field("shard_count", shard_count))
+    AwsKinesisStreamOut(OutStringVal(__schemaName, resourceName, "arn"), OutStringVal(__schemaName, resourceName, "id"))
+  override def __fields: List[Field] = List(Field("name", name), Field("shard_count", shard_count))
 
-  override def optionalFields: List[Option[Field]] =
+  override def __optionalFields: List[Option[Field]] =
     List(
       encryption_type.map(i => Field("encryption_type", i)),
       enforce_consumer_deletion.map(i => Field("enforce_consumer_deletion", i)),
@@ -27,5 +27,5 @@ final case class AwsKinesisStream(
       retention_period.map(i => Field("retention_period", i)),
       shard_level_metrics.map(i => Field("shard_level_metrics", i)),
       tags.map(i => Field("tags", i)))
-  override def schemaName: String = "AwsKinesisStream"
+  override def __schemaName: String = "AwsKinesisStream"
 }
