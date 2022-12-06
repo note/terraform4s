@@ -100,10 +100,9 @@ package object json {
           if (attrs.forall(_._2.isRight)) {
             Block(attrs.map(t => (t._1, t._2.toOption.get))).asRight[DecodingFailure]
           } else {
-            attrs.collectFirst {
-              case (key, Left(decodingFailure)) =>
-                DecodingFailure(s"Cannot decode Attribute value under $key within Block", decodingFailure.history)
-                  .asLeft[Block]
+            attrs.collectFirst { case (key, Left(decodingFailure)) =>
+              DecodingFailure(s"Cannot decode Attribute value under $key within Block", decodingFailure.history)
+                .asLeft[Block]
             }.get
           }
 

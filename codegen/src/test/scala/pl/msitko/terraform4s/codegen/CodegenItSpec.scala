@@ -24,7 +24,7 @@ class CodegenItSpec extends UnitSpec {
       val versions = Versions(terraformVersion = "0.12.19", Map("aws" -> "2.43.0"))
 
       val scalafmtCfg = Scalafmt.parseHoconConfig(os.read(os.pwd / ".scalafmt.conf")).get
-      val cfg         = CodegenConfig(packageName, resourcesOutput, versions, (os.pwd / ActualOutputDir), scalafmtCfg)
+      val cfg         = CodegenConfig(packageName, resourcesOutput, versions, os.pwd / ActualOutputDir, scalafmtCfg)
 
       val someHardcodedInstant =
         Instant.ofEpochSecond(LocalDate.parse("2020-01-15").atStartOfDay().toEpochSecond(ZoneOffset.ofHours(0)))

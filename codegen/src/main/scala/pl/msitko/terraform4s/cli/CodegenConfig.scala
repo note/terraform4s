@@ -39,7 +39,7 @@ final case class ScriptConfig(
     val terraformInitRes = os.proc("terraform", "init").call(cwd = tmpDir)
     if (terraformInitRes.exitCode == 0) {
       val terraformVersions = os.proc("terraform", "version").call(cwd = tmpDir).out.text
-      val bytes             = ByteBuffer.wrap(os.proc("terraform providers schema -json".split(' ')).call(cwd = tmpDir).out.bytes)
+      val bytes = ByteBuffer.wrap(os.proc("terraform providers schema -json".split(' ')).call(cwd = tmpDir).out.bytes)
       for {
         versions     <- TerraformVersionParser.parse(terraformVersions)
         schema       <- readSchema(bytes)

@@ -1,10 +1,9 @@
 package pl.msitko.terraform4s.provider.ast
 
-/**
-  * Models JSON output of `aws`
+/** Models JSON output of `aws`
   *
-  * Current AST includes only attributes that are used by Scala codegen
-  * In future we may add attributes present in `terraform providers schema -json`
+  * Current AST includes only attributes that are used by Scala codegen In future we may add attributes present in
+  * `terraform providers schema -json`
   */
 final case class ProviderSchema(provider_schemas: Map[String, Provider])
 

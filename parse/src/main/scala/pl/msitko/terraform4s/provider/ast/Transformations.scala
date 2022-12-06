@@ -3,15 +3,15 @@ package pl.msitko.terraform4s.provider.ast
 object Transformations {
 
   def camelCaseAttributes(in: ProviderSchema): ProviderSchema =
-    in.copy(provider_schemas = in.provider_schemas.map {
-      case (providerName, provider) =>
-        (providerName, provider.copy(resource_schemas = provider.resource_schemas.map {
-          case (resourceName, resource) =>
-            (
-              resourceName,
-              resource.copy(
-                block = resource.block.copy(attributes = resource.block.attributes.map(camelCaseAttribute))
-              ))
+    in.copy(provider_schemas = in.provider_schemas.map { case (providerName, provider) =>
+      (
+        providerName,
+        provider.copy(resource_schemas = provider.resource_schemas.map { case (resourceName, resource) =>
+          (
+            resourceName,
+            resource.copy(
+              block = resource.block.copy(attributes = resource.block.attributes.map(camelCaseAttribute))
+            ))
         }))
     })
 
@@ -29,9 +29,8 @@ object Transformations {
     case HCLMap(tpe)       => HCLMap(camelCaseType(tpe))
     case HCLSet(tpe)       => HCLSet(camelCaseType(tpe))
     case HCLObject(attrs) =>
-      HCLObject(attrs.map {
-        case (attrName, tpe) =>
-          (toCamelCase(attrName), camelCaseType(tpe))
+      HCLObject(attrs.map { case (attrName, tpe) =>
+        (toCamelCase(attrName), camelCaseType(tpe))
       })
   }
 

@@ -5,9 +5,8 @@ import pl.msitko.terraform4s.provider.ast._
 
 import scala.meta.{Ctor, Defn, Mod, Name, Self, Template, Term, Type}
 
-/**
-  * It's responsible for generating that part (just an example):
-  * final case class AwsKinesisStreamOut(arn: OutStringVal, id: OutStringVal)
+/** It's responsible for generating that part (just an example): final case class AwsKinesisStreamOut(arn: OutStringVal,
+  * id: OutStringVal)
   */
 object OutClassCodegen {
 
@@ -41,17 +40,15 @@ object OutClassCodegen {
   }
 
   private def outFields(outputs: List[(String, AttributeValue)], ctx: CodegenContext): List[Term.Param] =
-    outputs.map {
-      case (fieldName, attr) =>
-        val tpeSignature = valOf(TypeSignatureCodegen.fromHCLType(attr.`type`, ctx))
-        Commons.param(fieldName, tpeSignature)
+    outputs.map { case (fieldName, attr) =>
+      val tpeSignature = valOf(TypeSignatureCodegen.fromHCLType(attr.`type`, ctx))
+      Commons.param(fieldName, tpeSignature)
     }
 
   private def optionalOutFields(outputs: List[(String, AttributeValue)], ctx: CodegenContext): List[Term.Param] =
-    outputs.map {
-      case (fieldName, attr) =>
-        val tpeSignature = TypeSignatureCodegen.fromHCLType(attr.`type`, ctx)
-        Commons.param(fieldName, valOf(Type.Apply(Type.Name("Option"), List(tpeSignature))))
+    outputs.map { case (fieldName, attr) =>
+      val tpeSignature = TypeSignatureCodegen.fromHCLType(attr.`type`, ctx)
+      Commons.param(fieldName, valOf(Type.Apply(Type.Name("Option"), List(tpeSignature))))
     }
 
   private def valOf(tpe: Type): Type = Type.Apply(Type.Name("Val"), List(tpe))

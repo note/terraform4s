@@ -4,8 +4,8 @@ import pl.msitko.terraform4s._
 
 final case class DynamoResourceOut(output1: OutStringVal, output2: OutVal[Boolean])
 
-final case class DynamoResource(input1: Val[String], input2: Val[Boolean], input3: Option[Val[String]] = None)(
-    implicit r: ProvidersRoot)
+final case class DynamoResource(input1: Val[String], input2: Val[Boolean], input3: Option[Val[String]] = None)(implicit
+    r: ProvidersRoot)
     extends Resource[DynamoResourceOut](r) {
 
   def out = DynamoResourceOut(

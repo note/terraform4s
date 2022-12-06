@@ -7,13 +7,11 @@
 package pl.msitko.example.aws
 
 import pl.msitko.terraform4s._
-
 final case class Anonymous0(
     domainName: String,
     resourceRecordName: String,
     resourceRecordType: String,
     resourceRecordValue: String)
-
 final case class AwsAcmCertificateOut(
     domainName: Val[String],
     id: Val[String],
@@ -27,7 +25,6 @@ final case class AwsAcmCertificateOut(
     arn: Val[String],
     domainValidationOptions: Val[List[Anonymous0]],
     validationEmails: Val[List[String]])
-
 final case class AwsAcmCertificate(
     domainName: Option[Val[String]] = None,
     id: Option[Val[String]] = None,
@@ -39,33 +36,29 @@ final case class AwsAcmCertificate(
     privateKey: Option[Val[String]] = None,
     tags: Option[Val[Map[String, String]]] = None)(implicit r: ProvidersRoot)
     extends Resource[AwsAcmCertificateOut](r) {
-
-  override def out =
-    AwsAcmCertificateOut(
-      OutStringVal(schemaName, resourceName, "domainName"),
-      OutStringVal(schemaName, resourceName, "id"),
-      OutVal[List[String]](schemaName, resourceName, "subjectAlternativeNames"),
-      OutStringVal(schemaName, resourceName, "validationMethod"),
-      OutVal[Option[String]](schemaName, resourceName, "certificateAuthorityArn"),
-      OutVal[Option[String]](schemaName, resourceName, "certificateBody"),
-      OutVal[Option[String]](schemaName, resourceName, "certificateChain"),
-      OutVal[Option[String]](schemaName, resourceName, "privateKey"),
-      OutVal[Option[Map[String, String]]](schemaName, resourceName, "tags"),
-      OutStringVal(schemaName, resourceName, "arn"),
-      OutVal[List[Anonymous0]](schemaName, resourceName, "domainValidationOptions"),
-      OutVal[List[String]](schemaName, resourceName, "validationEmails"))
+  override def out = AwsAcmCertificateOut(
+    OutStringVal(schemaName, resourceName, "domainName"),
+    OutStringVal(schemaName, resourceName, "id"),
+    OutVal[List[String]](schemaName, resourceName, "subjectAlternativeNames"),
+    OutStringVal(schemaName, resourceName, "validationMethod"),
+    OutVal[Option[String]](schemaName, resourceName, "certificateAuthorityArn"),
+    OutVal[Option[String]](schemaName, resourceName, "certificateBody"),
+    OutVal[Option[String]](schemaName, resourceName, "certificateChain"),
+    OutVal[Option[String]](schemaName, resourceName, "privateKey"),
+    OutVal[Option[Map[String, String]]](schemaName, resourceName, "tags"),
+    OutStringVal(schemaName, resourceName, "arn"),
+    OutVal[List[Anonymous0]](schemaName, resourceName, "domainValidationOptions"),
+    OutVal[List[String]](schemaName, resourceName, "validationEmails"))
   override def fields: List[Field] = List()
-
-  override def optionalFields: List[Option[Field]] =
-    List(
-      domainName.map(i => Field("domainName", i)),
-      id.map(i => Field("id", i)),
-      subjectAlternativeNames.map(i => Field("subjectAlternativeNames", i)),
-      validationMethod.map(i => Field("validationMethod", i)),
-      certificateAuthorityArn.map(i => Field("certificateAuthorityArn", i)),
-      certificateBody.map(i => Field("certificateBody", i)),
-      certificateChain.map(i => Field("certificateChain", i)),
-      privateKey.map(i => Field("privateKey", i)),
-      tags.map(i => Field("tags", i)))
+  override def optionalFields: List[Option[Field]] = List(
+    domainName.map(i => Field("domainName", i)),
+    id.map(i => Field("id", i)),
+    subjectAlternativeNames.map(i => Field("subjectAlternativeNames", i)),
+    validationMethod.map(i => Field("validationMethod", i)),
+    certificateAuthorityArn.map(i => Field("certificateAuthorityArn", i)),
+    certificateBody.map(i => Field("certificateBody", i)),
+    certificateChain.map(i => Field("certificateChain", i)),
+    privateKey.map(i => Field("privateKey", i)),
+    tags.map(i => Field("tags", i)))
   override def schemaName: String = "aws_acm_certificate"
 }
